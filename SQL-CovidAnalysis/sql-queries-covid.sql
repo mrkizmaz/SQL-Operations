@@ -71,6 +71,12 @@ SELECT date, total_cases_per_million, location FROM CovidDeaths
 WHERE total_cases_per_million > 0
 ORDER BY total_cases_per_million; -- ülkelere göre toplam vaka (milyon basına)
 
+/* 
+ÖNEMLI: verisetindeki bazı degiskenlerin veri tipi, sayısal olması gerekirken text olarak girilmis.
+Daha sonra hallet !! ciddi bir sorun !!
+SORUN HALLEDILDI !
+*/
+
 -- Ilk Ölümlerin Incelenmesi --
 
 SELECT date, new_deaths, location FROM CovidDeaths
@@ -84,7 +90,7 @@ WHERE new_deaths > 0 AND location
 NOT IN ('World', 'Asia', 'Europe', 'North America', 'South America', 'European Union', 'Oceania', 'Africa')
 ORDER BY date LIMIT 1;
 
--- en cok ölüm nerede ve ne zaman bildirilmis? (14 ocak mexico'da bildirilmis!)
+-- en cok ölüm nerede ve ne zaman bildirilmis? (21 ocak 2021 USA'de bildirilmis, 4474 deaths)
 SELECT date, max(new_deaths) AS encokDeath, location FROM
 (SELECT date, new_deaths, location FROM CovidDeaths
 WHERE new_deaths > 0.0 AND location NOT IN
@@ -93,7 +99,7 @@ ORDER BY new_deaths DESC);
 
 -- kıtalara göre ilk ölümler nerede ve ne zaman oldu? (ülkeleri dogru vermiyor gibi!!)
 SELECT date, new_deaths, total_deaths, location, continent FROM CovidDeaths
-WHERE new_deaths > 0.0
+WHERE new_deaths > 0
 GROUP BY continent
 ORDER BY date;
 
@@ -102,21 +108,21 @@ WHERE location = 'Turkey' AND new_deaths > 0.0
 ORDER BY date
 LIMIT 1; -- TR'de ilk ölüm ne zaman oldu? (17 Mart 2020)
 
--- TR'de en cok ölüm ne zaman bildirildi? (26 nisan 2020, 99 ölüm!!)
+-- TR'de en cok ölüm ne zaman bildirildi? (30 nisan 2021, 394 deaths)
 SELECT date, max(new_deaths) FROM
 (SELECT date, new_deaths, location FROM CovidDeaths
 WHERE new_deaths > 0.0 AND location = 'Turkey'
 ORDER BY new_deaths DESC);
 
-/* 
-ÖNEMLI: verisetindeki bazı degiskenlerin veri tipi, sayısal olması gerekirken text olarak girilmis.
-Daha sonra hallet !! ciddi bir sorun !!
-*/
-
 SELECT date, new_deaths, location FROM CovidDeaths
-WHERE location LIKE '%states%' AND new_deaths > 0.1
+WHERE location LIKE '%states%' AND new_deaths > 0
 ORDER BY date
 LIMIT 1; -- Amerika'da ilk ölüm ne zaman oldu? (29 Şubat 2020)
+
+-- TR'de ölüm oranları nasıl olmus?
+SELECT date, new_deaths, total_deaths, (new_deaths / total_deaths) AS deathsOran, location FROM CovidDeaths
+WHERE new_deaths > 0 AND location = 'Turkey'
+ORDER BY new_deaths ASC;
 
 SELECT
 (SELECT COUNT(*) FROM 
@@ -162,7 +168,6 @@ WHERE location LIKE '%states%'; -- ölüm sayılarının incelenmesi
 SELECT date, new_deaths, total_deaths, (new_deaths / total_deaths) AS oranDeath, location
 FROM CovidDeaths
 WHERE location LIKE '%states%'; -- ölüm oranlarının incelenmesi
-
 
 
 

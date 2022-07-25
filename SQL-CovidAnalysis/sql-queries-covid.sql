@@ -74,7 +74,7 @@ ORDER BY total_cases_per_million; -- ülkelere göre toplam vaka (milyon basına
 /* 
 ÖNEMLI: verisetindeki bazı degiskenlerin veri tipi, sayısal olması gerekirken text olarak girilmis.
 Daha sonra hallet !! ciddi bir sorun !!
-SORUN HALLEDILDI !
+SORUN HALLEDILDI! (Database Structure --> Modify Table)
 */
 
 -- Ilk Ölümlerin Incelenmesi --

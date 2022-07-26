@@ -1,0 +1,448 @@
+-- ### Terminal Ortamında PostgreSQL Sorguları ### --
+
+CREATE USER ersel WITH CREATEDB LOGIN ENCRYPTED PASSWORD 'mrkizmaz122'
+
+
+DROP DATABASE test;
+
+CREATE USER ersel WITH CREATEDB LOGIN ENCRYPTED PASSWORD 'test1';
+CREATE USER ersell WITH CREATEDB LOGIN ENCRYPTED PASSWORD 'test1';
+CREATE DATABASE test;
+
+DROP DATABASE test;
+
+
+CREATE DATABASE test;
+
+\c test
+\c postgres
+
+CREATE DATABASE test1
+
+CREATE DATABASE ersel;
+
+CREATE USER ersel WITH CREATEDB LOGIN ENCRYPTED PASSWORD 'ersel';
+
+
+GRANT ALL PRIVILEGES ON DATABASE deneme TO ersel;
+GRANT ALL PRIVILEGES ON DATABASE ersel TO ersel;
+GRANT ALL PRIVILEGES ON DATABASE ersel1 TO ersel;
+
+// sql sorguları
+
+SELECT * FROM persons LIMIT 10;
+
+SELECT * FROM persons WHERE gender = 'Male' AND country_of_birth = 'Poland' LIMIT 10;
+SELECT * FROM persons WHERE gender = 'Male' AND (country_of_birth = 'Poland' OR country_of_birth = 'China') LIMIT 10;
+SELECT * FROM persons WHERE gender = 'Male' AND (country_of_birth = 'Poland' OR country_of_birth = 'China') AND last_name = 'Pietersma';
+SELECT * FROM persons WHERE gender = 'Male' AND (country_of_birth = 'Poland' OR country_of_birth = 'China') AND last_name = 'Cranke';
+
+// durum incelemeleri
+SELECT 1 = 1;
+SELECT 1 = 0;
+SELECT 1 = 0 AS durum;
+SELECT 1 > 0 AS durum;
+SELECT 1 > 1 AS durum;
+SELECT 1 <> 2;
+SELECT 2 <> 2;
+SELECT 'ersel' <> 'ERSEL';
+SELECT 'ersel' <> 'ersel';
+
+SELECT * FROM persons OFFSET 6 LIMIT 10;
+SELECT * FROM persons WHERE country_of_birth = 'France' OR country_of_birth = 'China' OR country_or_birth = 'Brazil' LIMIT 10;
+
+SELECT * FROM persons
+WHERE country_of_birth IN ('China', 'Brazil', 'France') LIMIT 10;
+
+SELECT * FROM persons
+WHERE country_of_birth IN ('China', 'Brazil', 'France') ORDER BY country_of_birth DESC LIMIT 10;
+
+SELECT * FROM persons
+WHERE date_of_birth
+BETWEEN DATE '2000-01-01' AND '2015-01-01' LIMIT 10;
+
+SELECT * FROM persons LIMIT 10;
+SELECT * FROM persons
+WHERE date_of_birth
+BETWEEN DATE '2021-01-01' AND '2022-01-01' LIMIT 10;
+
+// like islemleri
+
+SELECT * FROM persons WHERE email LIKE '%.com';
+SELECT * FROM persons WHERE email LIKE '%@bloomberg.com';
+SELECT * FROM persons WHERE email LIKE '%@google.com';
+SELECT * FROM persons WHERE email LIKE '%@google.%';
+SELECT * FROM persons WHERE email LIKE '%@__h%';
+SELECT * FROM persons WHERE email LIKE '%__h%';
+SELECT * FROM persons WHERE email LIKE '__h%';
+SELECT * FROM persons WHERE country_of_birth LIKE '__h%';
+SELECT * FROM persons WHERE country_of_birth LIKE 'h%';
+SELECT * FROM persons WHERE country_of_birth LIKE 'a%';
+SELECT * FROM persons WHERE country_of_birth LIKE 'P%';
+
+SELECT DISTINCT country_of_birth FROM persons LIMIT 10; 
+SELECT country_of_birth FROM persons GROUP BY country_of_birth LIMIT 10; 
+ 
+SELECT country_of_birth, COUNT(*) AS toplam FROM persons GROUP BY country_of_birth; 
+SELECT country_of_birth, COUNT(*) AS toplam FROM persons GROUP BY country_of_birth ORDER BY country_of_birth; 
+SELECT country_of_birth, COUNT(*) AS toplam FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 5 ORDER BY country_of_birth; 
+SELECT country_of_birth, COUNT(*) AS toplam FROM persons GROUP BY country_of_birth HAVING toplam > 5 ORDER BY country_of_birth; 
+SELECT country_of_birth, COUNT(*) AS toplam FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 40 ORDER BY country_of_birth; 
+SELECT country_of_birth, COUNT(*) AS toplam FROM persons GROUP BY country_of_birth HAVING COUNT(*) >= 44 ORDER BY country_of_birth; 
+SELECT country_of_birth, COUNT(*) AS toplam FROM persons GROUP BY country_of_birth HAVING COUNT(*) >= 42 ORDER BY country_of_birth; 
+
+
+\i /home/ersel/Desktop/PostgreSQL/car.sql //sql dosyasını import etme
+
+SELECT * FROM car;
+SELECT MAX(price) FROM car;
+
+
+SELECT * FROM persons LIMIT 10;
+SELECT last_name, gender FROM persons LIMIT 10;
+SELECT last_name, gender FROM persons WHERE gender = 'Male' LIMIT 10;
+
+SELECT gender, SUM(*) FROM persons;
+SELECT gender, SUM(*) FROM persons GROUP BY gender;
+SELECT gender FROM persons GROUP BY gender;
+
+SELECT gender, COUNT(*) FROM persons GROUP BY gender;
+SELECT COUNT(*) FROM persons;
+
+SELECT gender, COUNT(*) FROM persons WHERE gender = 'Male';
+SELECT gender FROM persons;
+SELECT COUNT(gender) FROM persons;
+SELECT COUNT(gender) FROM persons WHERE gender = 'Male';
+SELECT gender, COUNT(gender) FROM persons WHERE gender = 'Male';
+SELECT gender,  COUNT(gender) FROM persons GROUP BY gender  WHERE gender = 'Male';
+SELECT gender,  COUNT(gender) FROM persons GROUP BY gender WHERE gender = 'Male';
+SELECT gender,  COUNT(gender) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), COUNT(*) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender), COUNT(*) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender), SUM(*) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender), SUM(gender) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender), (SELECT COUNT(*) FROM persons) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender), COUNT(*) / (SELECT COUNT(*) FROM persons) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender), (COUNT(gender)) / (SELECT COUNT(*) FROM persons) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender), (COUNT(gender)) / (SELECT COUNT(*) FROM persons) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), 5/2  FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), (5/2)*10  FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), float(5/2)  FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), floatn(5/2)  FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), ROUND((5/2), 2)  FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), div(5,2) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), floor(div(5,2)) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), ceil(div(5,2)) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), ceil(div(6,5)) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender) FROM persons GROUP BY gender;
+
+// float sayı yazdırma
+SELECT gender, COUNT(gender), 5::NUMERIC / 2 FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), ROUND(5::NUMERIC / 2) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), ROUND(5::NUMERIC / 2, 2) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), ROUND((SELECT COUNT(*) FROM persons)::NUMERIC / COUNT(gender), 2) FROM persons WHERE gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(gender), ROUND((SELECT COUNT(*) FROM persons)::NUMERIC / COUNT(gender), 2) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender), ROUND((SELECT COUNT(*) FROM persons)::NUMERIC / COUNT(gender)) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender) AS counts_gender, ROUND(COUNT(gender)::NUMERIC / (SELECT COUNT(*) FROM persons) ,3) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender) AS counts_gender, ROUND(COUNT(gender)::NUMERIC / (SELECT COUNT(*) FROM persons) ,3) * 100 AS percent_gender FROM persons GROUP BY gender;
+
+
+SELECT * FROM persons LIMIT 10;
+SELECT country_of_birth, COUNT(*) FROM persons GROUP BY country_of_birth;
+SELECT country_of_birth, COUNT(*) FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT first_name, country_of_birth, COUNT(*) FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT gender, country_of_birth, COUNT(*) FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT gender,  country_of_birth, COUNT(*) FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10 WHERE gender = 'Male';
+SELECT gender,  country_of_birth, COUNT(*) FROM persons WHERE gender = 'Male' GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT country_of_birth, COUNT(*) FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT country_of_birth, COUNT(*) FROM persons GROUP BY country_of_birth HAVING COUNT(*) <> 10;
+SELECT country_of_birth, COUNT(*) FROM persons GROUP BY country_of_birth HAVING COUNT(*) <> 1;
+SELECT country_of_birth, COUNT(*) FROM persons GROUP BY country_of_birth BETWEEN 10 AND 40;
+SELECT country_of_birth, COUNT(*) FROM persons GROUP BY country_of_birth WHERE date_of_birth BETWEEN 10 AND 40;
+SELECT * FROM persons LIMIT 10;
+SELECT first_name, email, gender FROM persons WHERE date_of_birth;
+SELECT first_name, email, gender FROM persons WHERE date_of_birth BETWEEN 10 AND 20;
+SELECT first_name, email, gender FROM persons WHERE date_of_birth BETWEEN '2021-01-01' AND '2022-01-01';
+SELECT first_name, email, gender, date_of_birth FROM persons WHERE date_of_birth BETWEEN DATE '2021-01-01' AND DATE '2022-01-01';
+SELECT first_name, email, gender, date_of_birth FROM persons WHERE date_of_birth, gender = 'Male' BETWEEN DATE '2021-01-01' AND DATE '2022-01-01';
+SELECT first_name, email, gender, date_of_birth FROM persons WHERE date_of_birth BETWEEN DATE '2021-01-01' AND DATE '2022-01-01' AND gender = 'Male';
+SELECT COUNT(*) FROM persons WHERE date_of_birth BETWEEN DATE '2021-01-01' AND DATE '2022-01-01' AND gender = 'Male';
+SELECT gender, COUNT(gender) FROM persons WHERE date_of_birth BETWEEN DATE '2021-01-01' AND DATE '2022-01-01' AND gender = 'Male';
+SELECT gender, COUNT(*) FROM persons WHERE date_of_birth BETWEEN DATE '2021-01-01' AND DATE '2022-01-01' AND gender = 'Male';
+SELECT gender, COUNT(*) FROM persons WHERE date_of_birth BETWEEN DATE '2021-01-01' AND DATE '2022-01-01' AND gender = 'Male' GROUP BY gender;
+SELECT gender, COUNT(*) FROM persons WHERE date_of_birth BETWEEN DATE '2021-01-01' AND DATE '2022-01-01' AND GROUP BY gender;
+SELECT gender, COUNT(*) FROM persons WHERE date_of_birth BETWEEN DATE '2021-01-01' AND DATE '2022-01-01' GROUP BY gender;
+SELECT * FROM persons WHERE gender = 'Agender';
+
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth)
+VALUES ('ersel', 'kizmaz', 'ersel@gmail.com', 'Male', '1997-05-09', 'Turkey');
+
+SELECT COUNT(*) FROM persons;
+SELECT * FROM persons;
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth)
+VALUES (1001, 'ersel', 'kizmaz', 'ersel@gmail.com', 'Male', '1997-05-09', 'Turkey');
+SELECT * FROM persons WHERE first_name = 'ersel';
+SELECT gender, COUNT(*) FROM persons WHERE date_of_birth BETWEEN DATE '1997-01-01' AND DATE '2022-01-01' GROUP BY gender;
+SELECT first_name, email, gender FROM persons WHERE date_of_birth BETWEEN DATE '1997-01-01' AND DATE '2022-01-01' GROUP BY gender;
+SELECT first_name, email, gender FROM persons WHERE date_of_birth BETWEEN DATE '1997-01-01' AND DATE '2022-01-01';
+SELECT first_name, email, gender, date_of_birth FROM persons WHERE date_of_birth BETWEEN DATE '1997-01-01' AND DATE '2022-01-01' ORDER BY date_of_birth ASC;
+
+SELECT DISTINCT country_of_birth FROM persons;
+SELECT DISTINCT country_of_birth, last_name FROM persons;
+SELECT COUNT(DISTINCT country_of_birth) FROM persons;
+SELECT DISTINCT COUNT(country_of_birth) FROM persons;
+SELECT DISTINCT country_of_birth FROM persons GROUP BY country_of_birth;
+SELECT DISTINCT country_of_birth, country_of_birth FROM persons GROUP BY country_of_birth;
+SELECT COUNT(DISTINCT country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth WHERE country_of_birth > 10;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons WHERE country_of_birth > 10 GROUP BY country_of_birth;
+SELECT COUNT(country_of_birth) FROM persons WHERE country_of_birth > 10 GROUP BY country_of_birth;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons WHERE COUNT(country_of_birth) > 10 GROUP BY country_of_birth;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth WHERE COUNT(country_of_birth) > 10;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth;
+
+
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10 WHERE country_of_birth = 'Brazil';
+SELECT COUNT(country_of_birth), country_of_birth FROM persons WHERE country_of_birth = 'Brazil' GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons WHERE country_of_birth = 'Brazil' OR 'Indonesia' GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons WHERE country_of_birth = 'Brazil' OR country_of_birth = 'Indonesia' GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons WHERE country_of_birth IN ('China', 'Poland') GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10 WHERE country_of_birth = 'Brazil';
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10 ORDER BY count;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10 ORDER BY count DESC;
+SELECT COUNT(country_of_birth), country_of_birth FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10 ORDER BY count DESC LIMIT 1;
+SELECT COUNT(country_of_birth), country_of_birth, MAX(country_of_birth) FROM persons GROUP BY country_of_birth HAVING COUNT(*) > 10;
+SELECT COUNT(country_of_birth), country_of_birth, MAX(country_of_birth) FROM persons;
+SELECT country_of_birth, MAX(country_of_birth) FROM persons;
+
+
+SELECT * FROM persons LIMIT 10;
+SELECT gender FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender) FROM persons GROUP BY gender;
+SELECT gender, COUNT(gender) FROM persons GROUP BY gender HAVING COUNT(*);
+SELECT gender, COUNT(gender) FROM persons GROUP BY gender HAVING COUNT(*) > 10;
+SELECT gender, COUNT(gender) FROM persons GROUP BY gender HAVING COUNT(*) > 400;
+SELECT gender, COUNT(gender) FROM persons GROUP BY gender HAVING COUNT(*) > 440;
+SELECT gender, COUNT(gender) FROM persons GROUP BY gender HAVING COUNT(*) > 444;
+SELECT gender, COUNT(gender) FROM persons GROUP BY gender HAVING COUNT(*) > 446;
+SELECT gender, COUNT(gender) FROM persons GROUP BY gender HAVING COUNT(*) <> 446;
+SELECT gender, COUNT(gender) FROM persons WHERE gender = 'Male' GROUP BY gender HAVING COUNT(*) <> 446;
+
+SELECT date_of_birth FROM persons LIMIT 10;
+SELECT date_of_birth, COUNT(*) FROM persons LIMIT 10;
+SELECT date_of_birth, COUNT(*) FROM persons;
+SELECT COUNT(date_of_birth) FROM persons;
+SELECT COUNT(date_of_birth) FROM persons GROUP BY date_of_birth;
+SELECT date_of_birth, COUNT(date_of_birth) FROM persons GROUP BY date_of_birth;
+SELECT DISTINCT date_of_birth FROM persons;
+SELECT COUNT(DISTINCT date_of_birth) FROM persons;
+
+SELECT date_of_birth, COUNT(date_of_birth) FROM persons GROUP BY date_of_birth;
+SELECT date_of_birth, COUNT(date_of_birth) FROM persons GROUP BY date_of_birth;
+SELECT date_of_birth, COUNT(date_of_birth) FROM persons GROUP BY date_of_birth HAVING COUNT(*) > 4;
+SELECT date_of_birth, COUNT(date_of_birth) FROM persons WHERE date_of_birth BETWEEN DATE '1997-01-01' AND '2021-01-01' GROUP BY date_of_birth HAVING COUNT(*) > 4;
+SELECT date_of_birth, COUNT(date_of_birth) FROM persons WHERE date_of_birth BETWEEN DATE '1997-01-01' AND '2021-01-01' GROUP BY date_of_birth;
+
+SELECT date_of_birth, COUNT(date_of_birth) FROM persons WHERE date_of_birth BETWEEN DATE '1997-01-01' AND DATE '2021-01-01' GROUP BY date_of_birth;
+
+SELECT date_of_birth, COUNT(date_of_birth) FROM persons WHERE date_of_birth BETWEEN DATE '1997-01-01' AND DATE '2022-01-01' GROUP BY date_of_birth;
+SELECT date_of_birth, COUNT(date_of_birth) FROM persons WHERE date_of_birth BETWEEN DATE '1997-01-01' AND DATE '2022-01-01' GROUP BY date_of_birth HAVING COUNT(*) > 5;
+
+
+// cars veri seti icin islemler
+SELECT * FROM cars LIMIT 10;
+SELECT make, model, price, MAX(price) FROM cars;
+SELECT make, model, price, MAX(price) FROM cars GROUP BY price;
+SELECT make, model, price, MAX(price) FROM cars GROUp BY make;
+SELECT make, model, MAX(price) FROM cars GROUp BY make;
+SELECT MAX(price) FROM cars GROUp BY make;
+SELECT MAX(price) FROM cars;
+SELECT make, MAX(price) FROM cars;
+SELECT MAX(price) FROM cars;
+SELECT * FROM cars ORDER BY price ASC LIMIT 10;
+SELECT * FROM cars ORDER BY price DESC LIMIT 10;
+SELECT * FROM cars ORDER BY price DESC LIMIT 1;
+SELECT * FROM cars GROUP BY model;
+SELECT model  FROM cars GROUP BY model;
+SELECT model, COUNT(*) FROM cars GROUP BY model;
+SELECT model, COUNT(*) FROM cars GROUP BY model HAVING COUNT(*) > 4;
+SELECT model, COUNT(*) FROM cars GROUP BY model HAVING COUNT(*) > 5;
+SELECT model, COUNT(*) FROM cars GROUP BY model HAVING COUNT(*) > 6;
+SELECT make, COUNT(*) FROM cars GROUP BY make HAVING COUNT(*) > 6;
+SELECT make, COUNT(*) FROM cars GROUP BY make HAVING COUNT(*) > 30;
+SELECT make FROM cars GROUP BY make;
+SELECT make, COUNT(*) FROM cars GROUP BY make;
+SELECT make, COUNT(*) FROM cars WHERE make IN ('BMW', 'Mercedes-Benz') GROUP BY make;
+SELECT make, SUM(price) FROM cars WHERE make IN ('BMW', 'Mercedes-Benz') GROUP BY make;
+SELECT make, AVG(price) FROM cars WHERE make IN ('BMW', 'Mercedes-Benz') GROUP BY make;
+SELECT make, AVG(price) FROM cars GROUP BY make;
+SELECT make, ROUND(AVG(price), 2) FROM cars GROUP BY make;
+SELECT make, ROUND(AVG(price), 2) FROM cars GROUP BY make ORDER BY price DESC;
+SELECT make, ROUND(AVG(price), 2) AS ort_price FROM cars GROUP BY make ORDER BY ort_price DESC;
+SELECT * FROM cars WHERE make = 'Tesla';
+SELECT make, ROUND(AVG(price), 2) AS ort_price FROM cars GROUP BY make ORDER BY ort_price DESC;
+SELECT id, make, model, price, price * 0.1 AS yuzde10_price FROM cars LIMIT 10;
+SELECT id, make, model, price, price * 0.1 AS yuzde10_price, ROUND((price - (price * 0.10)), 2) AS indirimli_price FROM cars LIMIT 10;
+SELECT id, make, model, price, price * 0.1 AS yuzde10_price, ROUND((price - (price * 0.10)), 2) AS yuzde10_indirimli_price FROM cars LIMIT 10;
+SELECT id, make, model, price AS original_price, price * 0.1 AS yuzde10_price, ROUND((price - (price * 0.10)), 2) AS yuzde10_indirimli_price FROM cars LIMIT 10;
+
+
+// intermadiatte islemler
+SELECT COALESCE (1) AS number;
+SELECT COALESCE (null, null, 1) AS number;
+SELECT COALESCE (null, null, 10) AS number;
+SELECT COALESCE (null, null, 1, 10) AS number;
+SELECT * FROM persons LIMIT 10;
+SELECT email FROM persons LIMIT 5;
+SELECT email FROM persons LIMIT 10;
+SELECT COALESCE(email) FROM persons LIMIT 10;
+SELECT COALESCE(email, 'email not provided') FROM persons LIMIT 10;
+SELECT 10 / 0;
+SELECT NULLIF(10, 10);
+SELECT NULLIF(10, 1);
+SELECT NULLIF(10, 19);
+SELECT NULLIF(100, 19);
+SELECT NULLIF(100, 100);
+SELECT 10 / NULL;
+SELECT 10 / NULLIF(2, 9);
+SELECT 10 / NULLIF(0, 0);
+SELECT COALESCE(SELECT 10 / NULLIF(0, 0), 0);
+SELECT COALESCE(10 / NULLIF(0, 0), 0);
+
+// zaman islemleri
+SELECT NOW();
+SELECT NOW()::DATE;
+SELECT NOW()::TIME;
+
+SELECT NOW() - INTERVAL '1 YEAR';
+SELECT NOW() - INTERVAL '10 YEAR';
+SELECT NOW() - INTERVAL '10 MONTH';
+SELECT NOW() - INTERVAL '10 DAY';
+SELECT NOW() + INTERVAL '10 DAY';
+SELECT NOW()::DATE + INTERVAL '10 DAY';
+SELECT (NOW() + INTERVAL '10 DAY')::DATE;
+SELECT NOW();
+SELECT EXTRACT(YEAR FROM NOW());
+SELECT EXTRACT(MONTH FROM NOW());
+SELECT EXTRACT(DAY FROM NOW());
+SELECT EXTRACT(DOW FROM NOW());
+SELECT EXTRACT(CENTURY FROM NOW());
+
+SELECT first_name, last_name, gender, country_of_birth, date_of_birth FROM persons LIMIT 5;
+SELECT first_name, last_name, gender, country_of_birth, date_of_birth AGE(NOW(), date_of_birth) AS age FROM persons LIMIT 5;
+SELECT first_name, last_name, gender, country_of_birth, date_of_birth, AGE(NOW(), date_of_birth) AS age FROM persons LIMIT 5;
+SELECT first_name, last_name, gender, country_of_birth, date_of_birth, AGE(NOW(), date_of_birth) AS age FROM persons LIMIT 22;
+
+SELECT * FROM persons LIMIT 1;
+SELECT * FROM persons WHERE first_name = 'ersel';
+
+SELECT first_name, AGE(NOW() - date_of_birth) FROM persons WHERE first_name = 'ersel';
+
+
+// alter table: primatry key kaldırma
+ALTER TABLE persons DROP CONSTRAINT persons_pkey;
+
+insert into persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) values (1, 'Binni', 'Tearney', 'btearney0@privacy.gov.au', 'Female', '2022-04-08', 'France');
+SELECT * FROM persons WHERE id = 1;
+
+// primary key ekleme
+ALTER TABLE persons ADD PRIMARY KEY (id);
+DELETE FROM persons WHERE id = 1;
+SELECT * FROM persons WHERE id = 1;
+insert into persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) values (1, 'Binni', 'Tearney', 'btearney0@privacy.gov.au', 'Female', '2022-04-08', 'France');
+SELECT * FROM persons WHERE id = 1;
+ALTER TABLE persons ADD PRIMARY KEY (id);
+
+SELECT email, COUNT(*) FROM persons GROUP BY email;
+SELECT email, COUNT(*) FROM persons GROUP BY email HAVING COUNT(*) > 1;
+insert into persons (first_name, last_name, email, gender, date_of_birth, country_of_birth) values ('Fernando', 'Tearney', 'btearney0@privacy.gov.au', 'Female', '2022-04-08', 'France');
+SELECT * FROM persons WHERE first_name = 'Fernando';
+insert into persons (first_name, last_name, email, gender, date_of_birth, country_of_birth) values ('Fernando', 'Tearney', 'btearney0@privacy.gov.au', 'Female', '2022-04-08', 'France');
+insert into persons (first_name, last_name, email, gender, date_of_birth, country_of_birth) values ('Fernando', 'Tearney', 'btearney0@privacy.gov.au', 'Female', '2022-04-08', 'France');
+insert into persons (first_name, last_name, email, gender, date_of_birth, country_of_birth) values ('Fernando', 'Tearney', 'btearney0@privacy.gov.au', 'Female', '2022-04-08', 'France');
+insert into persons (first_name, last_name, email, gender, date_of_birth, country_of_birth) values ('Fernando', 'Tearney', 'btearney0@privacy.gov.au', 'Female', '2022-04-08', 'France');
+insert into persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) values (1001, 'Fernando', 'Tearney', 'btearney0@privacy.gov.au', 'Female', '2022-04-08', 'France');
+
+SELECT * FROM persons OFFSET 990;
+
+insert into persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) values (1002, 'Fernando', 'Tearney', 'btearney0@privacy.gov.au', 'Female', '2022-04-08', 'France');
+SELECT email, COUNT(*) FROM persons GROUP BY email HAVING COUNT(*) > 1;
+SELECT * FROM persons WHERE email = 'btearney0@privacy.gov.au';
+
+// unique ekleme islemi
+ALTER TABLE persons ADD CONSTRAINT unique_email_address UNIQUE (email);
+DELETE FROM persons WHERE id = 1002;
+SELECT * FROM persons WHERE email = 'btearney0@privacy.gov.au';
+ALTER TABLE persons ADD CONSTRAINT unique_email_address UNIQUE (email);
+insert into persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) values (1002, 'Fernando', 'Tearney', 'btearney0@privacy.gov.au', 'Female', '2022-04-08', 'France');
+
+ALTER TABLE persons DROP CONSTRAINT unique_email_address;
+\d persons
+ALTER TABLE persons ADD UNIQUE(email) //2. yol! otomatik isim atanır;
+
+SELECT * FROM persons LIMIT 10;
+insert into persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) values (1002, 'Fernando', 'Tearney', 'deneme@deneme.com', 'Hello', '2022-04-08', 'France');
+SELECT DISTINT gender FROM persons;
+SELECT DISTINCT gender FROM persons;
+ALTER TABLE persons ADD CONSTRAINT gender_constraint CHECT(gender = 'Female' OR gender = 'Male' OR gender = 'Agender');
+ALTER TABLE persons ADD CONSTRAINT gender_constraint CHECK(gender = 'Female' OR gender = 'Male' OR gender = 'Agender');
+DELETE FROM persons WHERE gender = 'Hello';
+
+# check(kontrol) ekleme islemi
+ALTER TABLE persons ADD CONSTRAINT gender_constraint CHECK(gender = 'Female' OR gender = 'Male' OR gender = 'Agender');
+
+insert into persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) values (1002, 'Fernando', 'Tearney', 'deneme@deneme.com', 'Hello', '2022-04-08', 'France');
+insert into persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) values (1002, 'Fernando', 'Tearney', 'deneme@deneme.com', 'Lol', '2022-04-08', 'France');
+DELETE FROM persons WHERE id = '3';
+SELECT * FROM persons LIMIT 10;
+SELECT * FROM persons LIMIT 10;
+UPDATE persons SET email = 'skipper@gmail.com' WHERE id = 10;
+SELECT * FROM persons LIMIT 10;
+SELECT * FROM persons WHERE id = 10;
+UPDATE persons SET first_name = 'skip', last_name = 'montana', email = 'montana@gmail.com' WHERE id = 10;
+SELECT * FROM persons WHERE id = 10;
+
+SELECT * FROM persons LIMIT 10;
+\dt
+\c test
+
+SELECT * FROM persons WHERE id = 6;
+UPDATE persons SET email = 'derceh@gmail.com' WHERE id = 6;
+SELECT * FROM persons WHERE id = 6;
+
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES (6, 'Irvina', 'Derceh', 'derceh@gmail.com', 'Male', '2021-07-17', 'China');
+
+// on conflict, do nothing: (hatayı gidermek icin kullanılır, kullanılmasa da olur!)
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES (6, 'Irvina', 'Derceh', 'derceh@gmail.com', 'Male', '2021-07-17', 'China') ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES (6, 'Irvina', 'Derceh', 'derceh@gmail.com', 'Male', '2021-07-17', 'China') ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES (6, 'Irvina', 'Derceh', 'derceh@gmail.com', 'Male', '2021-07-17', 'China') ON CONFLICT (first_name) DO NOTHING;
+
+Upsert;
+SELECT * FROM persons WHERE id = 6;
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES (6, 'Irvina', 'Derceh', 'derceh@gmail.com', 'Male', '2021-07-17', 'China') ON 
+CONFLICT (first_name) DO UPDATE SET email = EXTRACTED.email;
+
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES (6, 'Irvina', 'Derceh', 'derceh@gmail.com', 'Male', '2021-07-17', 'China') ON 
+CONFLICT (first_name) DO UPDATE SET email = EXCLUDED.email;
+
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES (6, 'Irvina', 'Derceh', 'derceh@hotmail.com', 'Male', '2021-07-17', 'China') ON CONFLICT (first_name) DO UPDATE SET email = EXCLUDED.email;
+
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES (6, 'Irvina', 'Derceh', 'derceh@hotmail.com', 'Male', '2021-07-17', 'China') ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email;
+
+SELECT * FROM persons WHERE id = 6;
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES (6, 'Irvinaa', 'Dercehee', 'derceh@yahoo.com', 'Male', '2021-07-17', 'China') ON 
+CONFLICT (id) DO UPDATE SET first_name = EXCLUDED.first_name, email = EXCLUDED.email;
+
+SELECT * FROM persons WHERE id = 6;
+INSERT INTO persons (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES (6, 'Irvinaa', 'Dercehee', 'derceh@yahoo.com', 'Male', '2021-07-17', 'China') ON CONFLICT (id) DO UPDATE SET first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email;
+
+SELECT * FROM persons WHERE id = 6;
+\s /home/ersel/Desktop/PostgreSQL/psql-commands.txt

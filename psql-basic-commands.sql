@@ -1,22 +1,34 @@
 -- ### Temel Seviye PostgreSQL Sorguları ### --
 
--- website: https://www.postgresqltutorial.com/postgresql-getting-started/postgresql-sample-database/
+-- select islemleri
+SELECT 'ersel kizmaz';
+SELECT 25;
 
-SELECT * FROM customer LIMIT 5;
+SELECT * FROM customer LIMIT 5; -- ilk 5 satırı verir
+SELECT * FROM customer OFFSET 5 LIMIT 20; -- 5ten baslayarak 20 veri verir
+SELECT * FROM customer OFFSET 5 FETCH FIRST 5 ROW ONLY; -- 5ten sonra ilk 5i verir
+
 -- column birlestirme islemleri
 SELECT first_name || ' ' || last_name, email FROM customer LIMIT 5;
 SELECT CONCAT(first_name, last_name) FROM customer LIMIT 5; -- bosluksuz birlestirme
 SELECT CONCAT_WS(' ', customer_id, first_name, last_name) AS id_fullname, email FROM customer LIMIT 5;
 
--- order by
-SELECT customer_id, first_name, last_name FROM customer ORDER BY first_name, customer_id ASC LIMIT 5;
-SELECT first_name, LENGTH(first_name) AS len FROM customer ORDER BY len DESC LIMIT 10;
-
--- distinct
+-- distinct (essiz degerler)
 SELECT DISTINCT store_id FROM customer;
 SELECT COUNT(store_id) FROM customer;
 
 -- where
+-- durum incelemeleri
+SELECT 1 = 1;
+SELECT 1 = 0;
+SELECT 1 = 0 AS durum;
+SELECT 1 > 0 AS durum;
+SELECT 1 > 1 AS durum;
+SELECT 1 <> 2;
+SELECT 2 <> 2;
+SELECT 'ersel' <> 'ERSEL';
+SELECT 'ersel' <> 'ersel';
+
 SELECT * FROM customer WHERE first_name = 'Jamie';
 SELECT * FROM customer WHERE first_name = 'Jamie' AND last_name = 'Rice';
 
@@ -30,6 +42,10 @@ WHERE first_name LIKE 'A%' AND LENGTH(first_name) BETWEEN 4 AND 6
 ORDER BY name_length;
 
 SELECT * FROM customer WHERE first_name LIKE 'Bra%' AND last_name <> 'Motley';
+
+-- order by
+SELECT customer_id, first_name, last_name FROM customer ORDER BY first_name, customer_id ASC LIMIT 5;
+SELECT first_name, LENGTH(first_name) AS len FROM customer ORDER BY len DESC LIMIT 10;
 
 -- IN
 SELECT * FROM rental LIMIT 5;
@@ -56,6 +72,7 @@ WHERE payment_date BETWEEN '2007-02-07' AND '2007-02-15';
 
 -- like
 SELECT * FROM customer WHERE first_name LIKE 'Jen%';
+SELECT * FROM customer WHERE email LIKE '%.org';
 SELECT * FROM customer WHERE first_name LIKE '%er%' ORDER BY first_name;
 SELECT * FROM customer WHERE first_name LIKE '_her%' ORDER BY first_name;
 SELECT * FROM customer WHERE first_name ILIKE 'BaR%'; -- ilike -> harf boyutunu önemsemez
@@ -441,7 +458,13 @@ SELECT REVERSE(ad) FROM musteri;
 SELECT SUBSTRING('ersel kizmaz', 2, 4);
 SELECT LOWER(ad), UPPER(soyad) FROM musteri;
 
--- matematiksel fonksiyonlar
+-- matematiksel islemler
+SELECT 10 + 2;
+SELECT 10 / 2;
+SELECT 5!;
+SELECT 10 % 3;
+SELECT 4^2;
+
 SELECT abs(-22);
 SELECT CEIL(4.89);
 SELECT FLOOR(5.67);
@@ -452,6 +475,52 @@ SELECT ROUND(22.3142, 2);
 SELECT SIGN(-11);
 SELECT SQRT(625);
 SELECT LOG(50);
+
+-- float sayı yazdırma
+SELECT 5 / 2; -- output: 2
+SELECT 5::NUMERIC / 2; -- output: 2.5
+SELECT ROUND(5::NUMERIC / 2, 2);
+
+-- coalesce: genel olarak null degerleri doldurmak icin kullanılır
+SELECT COALESCE (1);
+SELECT COALESCE (null, null, 1) AS number;
+SELECT COALESCE (null, null, 10) AS number;
+SELECT COALESCE (null, null, 1, 10) AS number; -- ilk bilinen degeri yazar
+SELECT COALESCE (column, doldurulmak_istenen) FROM tablename; -- tabloda kullanım sekli
+
+-- nullif, greatest, least
+SELECT 10 / 0; -- error: division by zero!
+SELECT NULLIF(10, 10); -- esit ise null verir
+SELECT NULLIF(10, 1); -- esit degil ise ilk degeri verir
+SELECT NULLIF(10, 19);
+SELECT NULLIF(100, 19);
+SELECT NULLIF(100, 100);
+SELECT 10 / NULL; -- null
+SELECT 10 / NULLIF(2, 9); -- 5
+SELECT 10 / NULLIF(0, 0);
+SELECT COALESCE(10 / NULLIF(0, 0), 0); -- 10 / 0 hatasını gidermek icin
+
+-- timestamps and dates (zaman islemleri)
+SELECT NOW();
+SELECT NOW()::DATE;
+SELECT NOW()::TIME;
+
+SELECT NOW() - INTERVAL '1 YEAR';
+SELECT NOW() - INTERVAL '10 YEAR';
+SELECT NOW() - INTERVAL '10 MONTH';
+SELECT NOW() - INTERVAL '10 DAY';
+SELECT NOW() + INTERVAL '10 DAY';
+SELECT NOW()::DATE + INTERVAL '10 DAY';
+SELECT (NOW() + INTERVAL '10 DAY')::DATE;
+
+SELECT EXTRACT(YEAR FROM NOW());
+SELECT EXTRACT(MONTH FROM NOW());
+SELECT EXTRACT(DAY FROM NOW());
+SELECT EXTRACT(DOW FROM NOW());
+SELECT EXTRACT(CENTURY FROM NOW());
+
+-- age hesaplama
+SELECT CONCAT('ersel kizmaz ', AGE(NOW()::DATE, DATE '1997-05-09'), ' yasındadır.') AS me;
 
 		-- ## PSQL Table Commands ## -- 
 
@@ -643,8 +712,9 @@ CREATE TABLE links (
 	title VARCHAR (512) NOT NULL,
 	url VARCHAR (1024) NOT NULL );
 
-ALTER TABLE links ADD COLUMN active BOOLEAN; -- yeni column ekleme
-ALTER TABLE links DROP COLUMN active; -- column silme
+-- column ekleme ve cıkarma
+ALTER TABLE links ADD COLUMN active BOOLEAN;
+ALTER TABLE links DROP COLUMN active;
 
 ALTER TABLE links ADD COLUMN target VARCHAR(10);
 ALTER TABLE links ALTER COLUMN target SET DEFAULT 'ersel'; -- default olarak ersel
@@ -652,6 +722,10 @@ ALTER TABLE links ALTER COLUMN target SET DEFAULT 'ersel'; -- default olarak ers
 INSERT INTO links (title, url)
 VALUES
 	('PostgreSQL Tutorial', 'https://www.postgresqltutorial.com/');
+
+-- primary key ekleme cıkarma
+ALTER TABLE links ADD PRIMARY KEY (link_id);
+ALTER TABLE links DROP CONSTRAINT [pk_name]; -- pk_name'i bul sonra sil
 
 -- check ekleme (kontrol, kosul)
 ALTER TABLE links
@@ -661,9 +735,16 @@ INSERT INTO links (title, url, target)
 VALUES
 	('check_deneme', 'deneme.com', 'checkmi'); -- hata verir!
 
+-- 2.yol check ekleme
+ALTER TABLE links ADD CONSTRAINT title_const CHECK(title IN ('a', 'b', 'c'));
+
 -- unique ekleme
 ALTER TABLE links
 ADD CONSTRAINT unique_url UNIQUE (url);
+
+ALTER TABLE links ADD UNIQUE(url) -- 2. yol: otomatik isim atanır
+
+ALTER TABLE links DROP CONSTRAINT unique_url; -- constraint cıkarma
 
 INSERT INTO links (title, url)
 VALUES
@@ -674,5 +755,10 @@ ALTER TABLE links
 RENAME TO urls;
 -- SELECT * FROM links;
 SELECT * FROM urls;
+
+-- extensions (hazır fonksiyonlar)
+SELECT pg_available_extensions();
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- extension yüklemek icin
+SELECT uuid_generate_v4(); -- evrensel id tanımlar
 
 -- https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-add-column/

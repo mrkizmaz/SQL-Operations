@@ -1,4 +1,4 @@
--- ### Temel Seviye PostgreSQL Sorguları ### --
+	-- ### Temel Seviye PostgreSQL Sorguları ### --
 
 -- select islemleri
 SELECT 'ersel kizmaz';
@@ -451,12 +451,12 @@ SELECT CONCAT_WS('*', 'ersel', 'kizmaz');
 
 SELECT LEFT('Merhaba DÜnya', 4);
 SELECT LENGTH('ersel kizmaz');
-
-SELECT * FROM musteri;
-SELECT id, REPLACE(ad, 'e', 'a') FROM musteri;
-SELECT REVERSE(ad) FROM musteri;
+SELECT REPLACE('ersel', 'e', 'a');
+SELECT REVERSE('ersel');
 SELECT SUBSTRING('ersel kizmaz', 2, 4);
-SELECT LOWER(ad), UPPER(soyad) FROM musteri;
+SELECT LOWER('ERSEL'), UPPER('kizmaz');
+SELECT INITCAP('ersel kizmaz');
+
 
 -- matematiksel islemler
 SELECT 10 + 2;
@@ -645,7 +645,7 @@ SELECT relname sequence_name FROM pg_class WHERE relkind = 'S';
 DROP SEQUENCE IF EXISTS three CASCADE; 
 DROP TABLE order_details; -- iliskili sequnce'ları da siler
 
--- identify column
+-- identity column
 CREATE TABLE color (
     color_id INT GENERATED ALWAYS AS IDENTITY,
     color_name VARCHAR NOT NULL );
@@ -756,9 +756,87 @@ RENAME TO urls;
 -- SELECT * FROM links;
 SELECT * FROM urls;
 
+-- yeni column ekleme
+DROP TABLE IF EXISTS customers CASCADE; -- var olan tabloyu silme
+CREATE TABLE customers (
+    id SERIAL PRIMARY KEY,
+    customer_name VARCHAR NOT NULL );
+
+ALTER TABLE customers ADD COLUMN phone VARCHAR; -- tekli column ekleme
+ALTER TABLE customers 
+	ADD COLUMN fax VARCHAR,
+	ADD COLUMN email VARCHAR; -- coklu column ekleme
+
+INSERT INTO customers (customer_name)
+	VALUES ('Apple'),
+		   ('Samsung'),
+		   ('Sony');
+ALTER TABLE customers 
+	ADD COLUMN contact_name VARCHAR NOT NULL; -- hata verir! (eklenen veriler yüzünden)
+-- durumu düzeltmek icin (not null columnu eklemek icin);
+ALTER TABLE customers ADD COLUMN contact_name VARCHAR;
+UPDATE customers SET
+	contact_name = 'John Doe'
+WHERE id = 1;
+UPDATE customers SET
+	contact_name = 'Mary Doe'
+WHERE id = 2;
+UPDATE customers SET
+	contact_name = 'Lily Bush'
+WHERE id = 3;
+SELECT * FROM customers;
+ALTER TABLE customers
+ALTER COLUMN contact_name SET NOT NULL; -- var olan columna constarint özelligi ekleme
+
+-- var olan columnu silme
+ALTER TABLE tablename DROP COLUMN columnname; -- tekli column silme
+ALTER TABLE tablename DROP COLUMN columnname CASCADE; -- iliskili columnu silme
+ALTER TABLE tablename
+	DROP COLUMN columnname,
+	DROP COLUMN columnname,
+	DROP COLUMN columnname; -- coklu column silme
+	
+-- column tipini degistirme
+ALTER TABLE tablename
+ALTER COLUMN columnname [SET DATA] TYPE new_data_type;
+
+ALTER TABLE tablename
+ALTER COLUMN columnname TYPE new_data_type USING expression; -- expression columnname::integer
+
+-- column ismini degistirme
+ALTER TABLE tablenam RENAME COLUMN columnname TO new_column_name; -- 1. yol
+ALTER TABLE tablenmae RENAME columnname TO new_column_name; -- 2. yol
+
+-- databaseden tabloyu silme 
+-- kullanımı tehlikeli! (eger tablo silinirse icindeki tüm verilerde silinecektir)
+DROP TABLE [IF EXISTS] 
+   table_name_1,
+   table_name_2,
+   ...
+[CASCADE | RESTRICT];
+
+-- truncate (tabloyu silmez, icindeki verileri siler sadece column isimleri kalır)
+TRUNCATE TABLE customers; -- 1.yol
+TRUNCATE TABLE customers RESTART IDENTITY; -- 2.yol!
+SELECT * FROM customers;
+
+-- temporary table (gecici tablo olusturma)
+CREATE TEMPORARY [TEMP] TABLE temp_table_name(
+   column_list);
+   
+CREATE TEMP TABLE mytemp (c INT); -- gecici tablo
+SELECT * FROM mytemp; -- terminalde calıstırıldıgında tabloyu vermez (cünkü gecici tablo)
+
+-- copy table (var olan tabloyu yeni isimle kopyalama)
+CREATE TABLE new_table 
+AS TABLE existing_table WITH NO DATA; -- verileri almadan kopyalar (sadece columnlar)
+
+CREATE TABLE new_table AS
+SELECT * FROM existing_table WHERE condition; -- filtreleyerek kopyalama
+
+
 -- extensions (hazır fonksiyonlar)
 SELECT pg_available_extensions();
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- extension yüklemek icin
 SELECT uuid_generate_v4(); -- evrensel id tanımlar
 
--- https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-add-column/

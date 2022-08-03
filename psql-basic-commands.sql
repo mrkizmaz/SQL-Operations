@@ -834,6 +834,91 @@ AS TABLE existing_table WITH NO DATA; -- verileri almadan kopyalar (sadece colum
 CREATE TABLE new_table AS
 SELECT * FROM existing_table WHERE condition; -- filtreleyerek kopyalama
 
+-- ///// DATABASE CONSTRAINT \\\\\
+
+-- primary key (birincil anahtar)
+CREATE TABLE tablename (
+	column1 data_type PRIMARY KEY,
+	column2 data_type, ... ); -- 1.yol
+	
+CREATE TABLE tablename (
+	column1 data_type,
+	column2 data_type,
+	PRIMARY KEY (column1, column2, ...)); -- 2.yol
+	
+ALTER TABLE tablename ADD PRIMARY KEY (column1, column2); -- 3.yol
+
+ALTER TABLE tablename ADD COLUMN columnname data_type PRIMARY KEY; -- 4.yol
+
+ALTER TABLE tablename DROP CONSTRAINT primary_key_name; -- pk kaldırma
+
+-- foreign key (baska bir tablo ile iliskili column)
+[CONSTRAINT fk_name]
+   FOREIGN KEY(fk_columns) 
+   REFERENCES parent_table(parent_key_columns)
+   [ON DELETE delete_action]
+   [ON UPDATE update_action] -- tablo yaratılırken kullanımı
+-- actions;
+	-- SET NULL
+	-- SET DEFAULT
+	-- RESTRICT
+	-- NO ACTION
+	-- CASCADE
+	
+ALTER TABLE tablename ADD CONSTRAINT constraintname
+FOREIGN KEY (fk_columns)
+REFERENCES parent_table (parent_key_columns); -- alter ile fk ekleme
+
+ALTER TABLE tablename DROP CONSTRAINT constraint_fkey -- fk kaldırma
+
+-- check constraint
+DROP TABLE IF EXISTS employees;
+CREATE TABLE employees (
+	id SERIAL PRIMARY KEY,
+	first_name VARCHAR (50),
+	last_name VARCHAR (50),
+	birth_date DATE CHECK (birth_date > '1900-01-01'),
+	joined_date DATE CHECK (joined_date > birth_date),
+	salary numeric CHECK(salary > 0) );
+
+INSERT INTO employees (first_name, last_name, birth_date, joined_date, salary)
+VALUES ('John', 'Doe', '1972-01-01', '2015-07-01', -100000); -- salary < 0 !
+
+ALTER TABLE price_list
+ADD CONSTRAINT price_discount_check
+CHECK (
+	price > 0
+	AND discount >= 0
+	AND price > discount); -- alter ile check ekleme
+	
+-- unique constraint 
+CREATE TABLE tablename (
+	column1 data_type UNIQUE); -- tabloda kullanımı 1
+
+CREATE TABLE table (
+    c1 data_type,
+    c2 data_type,
+    c3 data_type,
+    UNIQUE (c2, c3) ); -- tabloda kullanımı 2
+	
+ALTER TABLE tablename ADD CONSTRAINT unique_name
+UNIQUE USING INDEX columnname;
+
+-- not null constraint
+CREATE TABLE tablename (
+   columnname data_type NOT NULL ); -- tablodaki kullanımı
+   
+ALTER TABLE tablename
+ALTER COLUMN columnname SET NOT NULL; -- alter ile kullanımı
+
+ALTER TABLE tablename
+ALTER COLUMN columnname
+SET NOT NULL; -- güncel columna not null özelligi ekleme
+
+ALTER TABLE tablename 
+ALTER COLUMN c1 SET NOT NULL,
+ALTER COLUMN c2 SET NOT NULL,
+ALTER COLUMN c3 SET NOT NULL; -- coklu columna not null özelligi ekleme
 
 -- extensions (hazır fonksiyonlar)
 SELECT pg_available_extensions();

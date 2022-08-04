@@ -1,6 +1,6 @@
-	-- ### Temel Seviye PostgreSQL Sorguları ### --
+	-- ### TEMEL SEVIYE POSTRESQL SORGULARI ### --
 
--- select islemleri
+-- SELECT
 SELECT 'ersel kizmaz';
 SELECT 25;
 
@@ -13,22 +13,22 @@ SELECT first_name || ' ' || last_name, email FROM customer LIMIT 5;
 SELECT CONCAT(first_name, last_name) FROM customer LIMIT 5; -- bosluksuz birlestirme
 SELECT CONCAT_WS(' ', customer_id, first_name, last_name) AS id_fullname, email FROM customer LIMIT 5;
 
--- distinct (essiz degerler)
+-- DISTINCT (essiz degerler)
 SELECT DISTINCT store_id FROM customer;
 SELECT COUNT(store_id) FROM customer;
 
--- where
 -- durum incelemeleri
 SELECT 1 = 1;
 SELECT 1 = 0;
 SELECT 1 = 0 AS durum;
 SELECT 1 > 0 AS durum;
 SELECT 1 > 1 AS durum;
-SELECT 1 <> 2;
+SELECT 1 <> 2; -- esit degil
 SELECT 2 <> 2;
 SELECT 'ersel' <> 'ERSEL';
 SELECT 'ersel' <> 'ersel';
 
+-- WHERE
 SELECT * FROM customer WHERE first_name = 'Jamie';
 SELECT * FROM customer WHERE first_name = 'Jamie' AND last_name = 'Rice';
 
@@ -43,7 +43,7 @@ ORDER BY name_length;
 
 SELECT * FROM customer WHERE first_name LIKE 'Bra%' AND last_name <> 'Motley';
 
--- order by
+-- ORDER BY (sıralama)
 SELECT customer_id, first_name, last_name FROM customer ORDER BY first_name, customer_id ASC LIMIT 5;
 SELECT first_name, LENGTH(first_name) AS len FROM customer ORDER BY len DESC LIMIT 10;
 
@@ -54,7 +54,7 @@ ORDER BY return_date;
 SELECT * FROM rental WHERE customer_id NOT IN (1, 2) LIMIT 10;
 
 SELECT * FROM rental WHERE CAST (return_date AS DATE) = '2005-05-27'
-ORDER BY customer_id;
+ORDER BY customer_id; -- tarihe göre alır
 
 -- IN with subquery
 SELECT * FROM customer
@@ -62,7 +62,7 @@ WHERE customer_id IN (
 SELECT customer_id FROM rental WHERE CAST (return_date AS DATE) = '2005-05-27')
 ORDER BY customer_id LIMIT 10;
 
--- between
+-- BETWEEN
 SELECT * FROM payment LIMIT 5;
 SELECT customer_id, payment_id, amount FROM payment WHERE amount BETWEEN 8 AND 9;
 SELECT customer_id, payment_id, amount FROM payment WHERE amount NOT BETWEEN 8 AND 9;
@@ -70,7 +70,7 @@ SELECT customer_id, payment_id, amount FROM payment WHERE amount NOT BETWEEN 8 A
 SELECT customer_id, payment_id, amount, payment_date FROM payment 
 WHERE payment_date BETWEEN '2007-02-07' AND '2007-02-15';
 
--- like
+-- LIKE
 SELECT * FROM customer WHERE first_name LIKE 'Jen%';
 SELECT * FROM customer WHERE email LIKE '%.org';
 SELECT * FROM customer WHERE first_name LIKE '%er%' ORDER BY first_name;
@@ -106,7 +106,7 @@ SELECT CONCAT_WS(' ', c.first_name, c.last_name) AS customer_fullname,
    INNER JOIN staff AS s USING(staff_id)
 ORDER BY p.amount DESC, p.payment_date ASC;
 
--- group by
+-- GROUP BY
 SELECT ROUND(AVG(amount), 2) AS ortalama, 
        SUM(amount) AS toplam, 
        COUNT(*) AS sayi, customer_id 
@@ -125,7 +125,7 @@ GROUP BY staff_id, customer_id ORDER BY customer_id;
 
 SELECT DATE(payment_date), SUM(amount) AS amount FROM payment GROUP BY DATE(payment_date) ORDER BY amount DESC;
 
--- having
+-- HAVING (group by ile kullanılır!)
 SELECT customer_id, SUM(amount) FROM payment
 GROUP BY customer_id HAVING SUM(amount) > 200;
 
@@ -134,7 +134,7 @@ GROUP BY store_id HAVING COUNT(customer_id) > 300;
 
 SELECT active, COUNT(*) FROM customer GROUP BY active HAVING COUNT(*) > 15;
 
--- grouping sets
+-- GROUPING SETS
 DROP TABLE IF EXISTS sales;
 CREATE TABLE sales (
     brand VARCHAR NOT NULL,
@@ -200,7 +200,7 @@ ORDER BY
 	brand,
 	segment;
     
--- rollup (toplamını da tabloda gösterir)
+-- ROLLUP (toplamını da tabloda gösterir)
 SELECT brand, segment, SUM(quantity) FROM sales
 GROUP BY
     ROLLUP (brand, segment)
@@ -227,7 +227,7 @@ GROUP BY
     ROLLUP (y, m, d)
 ORDER BY y;
 
--- cube
+-- CUBE
 SELECT brand, segment, SUM(quantity) FROM sales
 GROUP BY
     CUBE (brand, segment)
@@ -239,7 +239,7 @@ GROUP BY
     CUBE (segment)
 ORDER BY brand, segment;
 
--- subquery
+-- SUBQUERY (alt sorgu)
 SELECT * FROM film LIMIT 5;
 SELECT * FROM inventory LIMIT 5;
 SELECT * FROM rental LIMIT 5;
@@ -264,7 +264,7 @@ SELECT first_name, last_name FROM customer
 WHERE EXISTS (
     SELECT 1 FROM payment WHERE payment.customer_id = customer.customer_id);
 
--- any
+-- ANY
 SELECT * FROM film LIMIT 5;
 SELECT * FROM film_category LIMIT 5;
 
@@ -278,7 +278,7 @@ WHERE length >= ANY (
     INNER JOIN film_category USING(film_id)
     GROUP BY category_id);
 
--- any vs. in
+-- ANY vs. IN
 SELECT fc.category_id, f.title FROM film AS f
 INNER JOIN film_category AS fc USING(film_id)
 WHERE category_id = ANY(
@@ -291,7 +291,7 @@ WHERE category_id IN(
     SELECT category_id FROM category
     WHERE name = 'Action' OR name = 'Drama');
 
--- all
+-- ALL
 SELECT * FROM film LIMIT 5;
 SELECT rating, COUNT(*), ROUND(AVG(length), 2) AS avg_length FROM film
 GROUP BY rating
@@ -303,7 +303,7 @@ WHERE length > ALL (
     GROUP BY rating)
 ORDER BY length;
 
--- cte (common table expressions)
+-- CTE (common table expressions)
 /* 
 WITH cte_name (column_list) AS (
     CTE_query_definition 
@@ -346,7 +346,7 @@ VALUES
     ('https://swisscows.com/','Swisscows','Privacy safe WEB-search')
 RETURNING *;
 
--- update
+-- UPDATE (veri güncelleme)
 SELECT * FROM links;
 UPDATE links SET description = 'This tutorial about PostgreSQL for developers'
 WHERE id = 1
@@ -358,7 +358,7 @@ UPDATE links SET description = 'This link for searching about anything',
 WHERE id = 3
 RETURNING *;
 
--- delete
+-- DELETE
 SELECT * FROM links;
 DELETE FROM links WHERE id = 2
 RETURNING *;
@@ -368,7 +368,7 @@ RETURNING *;
 
 DELETE FROM links; -- tüm tabloyu siler (tehlikeli!)
 
--- upsert
+-- UPSERT
 CREATE TABLE customers (
 	customer_id serial PRIMARY KEY,
 	name VARCHAR UNIQUE,
@@ -399,7 +399,7 @@ DO
     UPDATE SET email = EXCLUDED.email || '; ' || customers.email
 RETURNING *;
 
--- transaction
+-- TRANSACTION
 -- ACID (atomic, consistent, isolated, durable)
 
 CREATE TABLE accounts (
@@ -457,7 +457,6 @@ SELECT SUBSTRING('ersel kizmaz', 2, 4);
 SELECT LOWER('ERSEL'), UPPER('kizmaz');
 SELECT INITCAP('ersel kizmaz');
 
-
 -- matematiksel islemler
 SELECT 10 + 2;
 SELECT 10 / 2;
@@ -481,7 +480,7 @@ SELECT 5 / 2; -- output: 2
 SELECT 5::NUMERIC / 2; -- output: 2.5
 SELECT ROUND(5::NUMERIC / 2, 2);
 
--- coalesce: genel olarak null degerleri doldurmak icin kullanılır
+-- COALESCE: genel olarak null degerleri doldurmak icin kullanılır
 SELECT COALESCE (1);
 SELECT COALESCE (null, null, 1) AS number;
 SELECT COALESCE (null, null, 10) AS number;
@@ -499,6 +498,8 @@ SELECT 10 / NULL; -- null
 SELECT 10 / NULLIF(2, 9); -- 5
 SELECT 10 / NULLIF(0, 0);
 SELECT COALESCE(10 / NULLIF(0, 0), 0); -- 10 / 0 hatasını gidermek icin
+SELECT GREATEST(10, 22);
+SELECT LEAST(10, 22);
 
 -- timestamps and dates (zaman islemleri)
 SELECT NOW();
@@ -522,7 +523,7 @@ SELECT EXTRACT(CENTURY FROM NOW());
 -- age hesaplama
 SELECT CONCAT('ersel kizmaz ', AGE(NOW()::DATE, DATE '1997-05-09'), ' yasındadır.') AS me;
 
-		-- ## PSQL Table Commands ## -- 
+   -- ///// ## PSQL Table Commands ## \\\\\
 
 /* Overview of PostgreSQL Data Types */
 /*
@@ -538,7 +539,7 @@ uuid, array, json, hstore
 special data types; box, line, point, lseg, polygon, inet, macaddr
 */
 
--- create table (genel tablo olusturma)
+-- CREATE TABLE (genel tablo olusturma)
 CREATE TABLE account (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -581,7 +582,7 @@ INTO TEMP TABLE short_film FROM film
 WHERE length < 60 ORDER BY title;
 SELECT * FROM short_film; -- temp (gecici yeni tablo olusturur)
 
--- create table ... as (iki farklı tabloyu birlestirerek yeni tablo olusturur)
+-- CREATE TABLE ... AS (iki farklı tabloyu birlestirerek yeni tablo olusturur)
 CREATE TABLE action_film AS 
 SELECT film_id, title, release_year, length, rating FROM film
 INNER JOIN film_category USING(film_id)
@@ -593,7 +594,7 @@ SELECT rating, COUNT(film_id) FROM film
 GROUP BY rating;
 SELECT * FROM film_rating;
 
--- serial example
+-- SERIAL
 CREATE TABLE fruits (
 	id SERIAL PRIMARY KEY, 
 	name VARCHAR NOT NULL );
@@ -606,7 +607,7 @@ INSERT INTO fruits (name) VALUES ('Banana')
 RETURNING id;
 SELECT * FROM fruits;
 
--- sequences (diziler)
+-- SEQUENCE (diziler)
 CREATE SEQUENCE mysequence
 INCREMENT 5
 START 100;
@@ -639,13 +640,13 @@ VALUES (100, nextval('order_item_id'), 'DVD Player', 100),
        (100, nextval('order_item_id'), 'Speaker', 250);
 SELECT * FROM order_details;
 
--- var olan sequence'ları yazdırma
+-- databasede var olan sequence'ları yazdırma
 SELECT relname sequence_name FROM pg_class WHERE relkind = 'S';
 
 DROP SEQUENCE IF EXISTS three CASCADE; 
 DROP TABLE order_details; -- iliskili sequnce'ları da siler
 
--- identity column
+-- IDENTITY column
 CREATE TABLE color (
     color_id INT GENERATED ALWAYS AS IDENTITY,
     color_name VARCHAR NOT NULL );
@@ -817,7 +818,7 @@ DROP TABLE [IF EXISTS]
 
 -- truncate (tabloyu silmez, icindeki verileri siler sadece column isimleri kalır)
 TRUNCATE TABLE customers; -- 1.yol
-TRUNCATE TABLE customers RESTART IDENTITY; -- 2.yol!
+TRUNCATE TABLE customers RESTART IDENTITY; -- 2.yol (otomatik olarak artan id sıralamasını da sıfırlar)
 SELECT * FROM customers;
 
 -- temporary table (gecici tablo olusturma)
@@ -834,7 +835,7 @@ AS TABLE existing_table WITH NO DATA; -- verileri almadan kopyalar (sadece colum
 CREATE TABLE new_table AS
 SELECT * FROM existing_table WHERE condition; -- filtreleyerek kopyalama
 
--- ///// DATABASE CONSTRAINT \\\\\
+-- ///// ## DATABASE CONSTRAINT ## \\\\\
 
 -- primary key (birincil anahtar)
 CREATE TABLE tablename (

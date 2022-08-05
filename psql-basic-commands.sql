@@ -797,7 +797,7 @@ ALTER TABLE tablename
 	DROP COLUMN columnname,
 	DROP COLUMN columnname; -- coklu column silme
 	
--- column tipini degistirme
+-- column veri tipini degistirme
 ALTER TABLE tablename
 ALTER COLUMN columnname [SET DATA] TYPE new_data_type;
 
@@ -805,8 +805,8 @@ ALTER TABLE tablename
 ALTER COLUMN columnname TYPE new_data_type USING expression; -- expression columnname::integer
 
 -- column ismini degistirme
-ALTER TABLE tablenam RENAME COLUMN columnname TO new_column_name; -- 1. yol
-ALTER TABLE tablenmae RENAME columnname TO new_column_name; -- 2. yol
+ALTER TABLE tablename RENAME COLUMN columnname TO new_column_name; -- 1. yol
+ALTER TABLE tablename RENAME columnname TO new_column_name; -- 2. yol
 
 -- databaseden tabloyu silme 
 -- kullanımı tehlikeli! (eger tablo silinirse icindeki tüm verilerde silinecektir)
@@ -833,7 +833,7 @@ CREATE TABLE new_table
 AS TABLE existing_table WITH NO DATA; -- verileri almadan kopyalar (sadece columnlar)
 
 CREATE TABLE new_table AS
-SELECT * FROM existing_table WHERE condition; -- filtreleyerek kopyalama
+SELECT * FROM existing_table WHERE condition; -- filtreleyerek kopyalama (constaintleri almaz!)
 
 -- ///// ## DATABASE CONSTRAINT ## \\\\\
 

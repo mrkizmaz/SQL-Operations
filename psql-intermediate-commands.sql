@@ -1,222 +1,235 @@
--- ### Orta Seviye PostgreSQL Sorguları ### -- 
+		-- ### ORTA SEVIYE POSTRESQL SORGULARI ### --
+/*
+https://www.mockaroo.com/ sitesinden person tablosu olusturuldu
+ve test database'e aktarıldı.
+*/
 
--- tablo ön görünümleri
--- SELECT * FROM personn LIMIT 5;
--- SELECT * FROM personn LIMIT 5;
+SELECT * FROM information_schema.columns; -- database hakkında tüm bilgileri verir
+SELECT * FROM information_schema.columns WHERE table_name = 'person'; -- person tablosundaki tüm bilgiler
 
+SELECT * FROM person LIMIT 5; -- tablo ön görünümü
 
--- SELECT * FROM personn WHERE car_id NOTNULL;
+-- ////// VIEW \\\\\\ 
+-- Kullanımı; (uzun sorguları kısayol haline getirir ve kolay calıstırılır)
+CREATE [OR REPLACE] VIEW view_name AS queries; -- 1
+CREATE OR REPLACE VIEW view_name AS queries
+WITH CHECK OPTION; -- 2 (checkli)
+SELECT * FROM view_name; -- view'i calıstırma
 
--- SELECT * FROM carr WHERE make = 'Maserati' LIMIT 1;
+DROP VIEW [IF EXISTS] view_name [CASCADE | RESTRICT]; -- view silme 
 
--- SELECT * FROM personn LIMIT 10;
+-- örnek 1: uzun sorguyu kısa haline getirme
+CREATE OR REPLACE VIEW view_email AS
+SELECT * FROM person WHERE email IS NULL LIMIT 5;
+SELECT * FROM view_email;
 
--- UPDATE personn SET car_id = (SELECT id FROM carr WHERE make = 'Maserati' LIMIT 1) WHERE first_name = 'Leonerd';
--- SELECT * FROM personn WHERE first_name = 'Leonerd';
+-- örnek 2: checkli view olusturma
+CREATE VIEW check_view AS
+SELECT * FROM person WHERE LENGTH(person.first_name::text) > 6
+WITH CHECK OPTION;
 
--- UPDATE personn SET car_id = 47 WHERE first_name = 'Skipper';
+INSERT INTO check_view (id, first_name, last_name, email, gender, dob, cob)
+VALUES (1002, 'Ersel', 'Kızmaz', 'ersel@gmail.com', 'Male', '2000-02-02', 'Canada'); -- hata verir (check!)
 
--- SELECT p.first_name, p.last_name, p.email,c.make FROM personn AS p INNER JOIN carr AS c ON p.car_id = c.id WHERE email NOTNULL;
-
--- SELECT * FROM personn WHERE LENGTH(first_name) = (SELECT MAX(LENGTH(first_name)) FROM personn);
-
--- SELECT country_of_birth, COUNT(*) FROM personn GROUP BY country_of_birth ORDER BY COUNT(*) DESC LIMIT 1;
-
--- SELECT * FROM personn WHERE country_of_birth = 'China' AND car_id NOTNULL;
-
--- SELECT ASCII(LEFT(first_name, 1)), first_name FROM personn LIMIT 10;
-
--- SELECT * FROM personn WHERE car_id NOTNULL;
-
--- view olusturma
--- CREATE OR REPLACE VIEW view1 AS
--- SELECT * FROM personn WHERE car_id IS NOT NULL;
--- SELECT * FROM view1;
-
--- CREATE OR REPLACE VIEW check_wiew AS
--- SELECT * FROM personn WHERE LENGTH(personn.first_name::text) > 6
--- WITH CHECK OPTION;
-
--- check_view kontrol
--- INSERT INTO check_wiew (id, first_name, last_name, email, gender, date_of_birth, country_of_birth) VALUES
--- (108, 'Deneme123', 'Denemelast', 'denemeâgmail.com', 'Male', DATE '2000-02-02', 'Turkey');
-
-
--- degisken tanımlama islemleri
--- örnek 1
--- DO $$
--- DECLARE 
---     x INTEGER:= 22;
---     y INTEGER:= 11;
---     toplam INTEGER;
--- BEGIN
--- RAISE NOTICE 'X: %', x;
--- RAISE NOTICE 'Y: %', y;
--- RAISE NOTICE 'Toplam: %', (x+y);
--- END $$;
-
--- örnek 2
--- DO $$
--- DECLARE
---     name VARCHAR(50):= 'Ersel';
---     last_name VARCHAR(50):= 'Kızmaz';
---     age INTEGER;
--- BEGIN
--- age:= (SELECT EXTRACT(YEAR FROM AGE(NOW(), '1997-05-09')));
--- RAISE NOTICE '% % % yasındadır.', name, last_name, age;
--- END $$;
-
--- örnek 3: tablo ile
--- CREATE OR REPLACE VIEW variable_view AS
--- DO $$
--- DECLARE
---     kar_sayisi INTEGER;
---     name VARCHAR(50);
--- BEGIN
---     kar_sayisi:= (SELECT MAX(LENGTH(first_name)) FROM personn);
---     name:= (SELECT first_name FROM personn WHERE LENGTH(first_name) = (SELECT MAX(LENGTH(first_name)) FROM personn) LIMIT 1);
---     RAISE NOTICE 'En uzun karaktere sahip olan isim: %', name;
--- END $$;
-
--- karar yapıları
--- DO $$
--- DECLARE
---     sinav1 INTEGER:= 50;
---     sinav2 INTEGER:= 60;
---     sinav3 INTEGER:= 70;
---     ortalama NUMERIC;
--- BEGIN
---     ortalama := (sinav1 + sinav2 + sinav3) / 3;
---     RAISE NOTICE 'Sınavların ortalaması: %', ortalama;
---     if ortalama >= 65 THEN
---     RAISE NOTICE 'Tebrikler dersi geçtiniz.';
---     else 
---     RAISE NOTICE 'Bu notlar ile dersten kaldınız.';
---     end if;
--- END $$;
-
--- tablolar ile karar yapısı
--- DO $$
--- DECLARE
---     adet INTEGER;
---     ulke VARCHAR;
--- BEGIN
---     adet := (SELECT COUNT(*) FROM personn GROUP BY country_of_birth ORDER BY COUNT(*) DESC LIMIT 1);
---     ulke := (SELECT country_of_birth FROM personn GROUP BY country_of_birth HAVING COUNT(*) = (
---             SELECT COUNT(*) FROM personn GROUP BY country_of_birth ORDER BY COUNT(*) DESC LIMIT 1));
---     RAISE NOTICE 'En fazla doğunulan ülke: %, adedi: % ', ulke, adet;
--- END $$;
--- ee karar yapıları nerde? gjhjsjd neyse sonra bak!
-
--- case kullanımı
--- SELECT first_name, gender,
--- CASE
---     WHEN LENGTH(first_name) >= 7
---     THEN 'Geçti'
---     WHEN LENGTH(first_name) >= 5 AND LENGTH(first_name) < 7
---     THEN 'Orta'
---     ELSE 'Kaldı'
--- END durum
--- FROM personn LIMIT 50;
-
--- while kullanımı
--- DO $$
--- DECLARE
---     sayac INTEGER := 1;
---     toplam INTEGER := 0;
--- BEGIN 
---     while sayac <= 10 loop
---     RAISE NOTICE 'Sayac durumu: %', sayac;
---     toplam := toplam + sayac;
---     sayac := sayac + 1;
---     end loop;
---     RAISE NOTICE 'Sayacların toplamı: %', toplam;
--- END $$
-
--- loop kullanımı (while ile aynı denilebilir.)
--- DO $$
--- DECLARE
---     sayac INTEGER := 1;
---     toplam INTEGER := 0;
--- BEGIN
---     loop
---         exit when sayac = 10;
---         RAISE NOTICE 'Merhaba Ersel Kızmaz';
---         toplam := toplam + sayac;
---         sayac := sayac + 1;
---     end loop;
---     RAISE NOTICE 'Ardışık sayıların toplamı: %', toplam;
--- END $$;
-
--- procedures (fonksiyonlara benziyor!)
--- CREATE OR REPLACE PROCEDURE deneme()
--- LANGUAGE plpgsql AS $$
--- BEGIN
---     RAISE NOTICE 'PostgreSQL ögrenmeye devam ediyorum.';
--- END $$;
--- proceduru cagırmak icin; CALL (procedur_name)
--- CALL deneme();
-
--- parametreli procedure kullanımı
--- CREATE PROCEDURE person_procedure(a INT, b VARCHAR, c VARCHAR, d VARCHAR, e DATE, f VARCHAR)
--- LANGUAGE plpgsql AS $$
--- BEGIN
--- INSERT INTO person (id, first_name, last_name, gender, date_of_birth, email) VALUES
--- (a, b, c, d, e, f);
--- END $$;
--- CALL person_procedure(3, 'Ersel', 'Kızmaz', 'Male', '1997-05-09', 'ersel@gmail.com');
-
--- SELECT * FROM person;
-
-
--- UUID'yi anlama
--- SELECT pg_typeof(uuid_generate_v1()::text);
--- SELECT uuid_generate_v4(), uuid_generate_v4()::varchar;
-
--- ALTER TABLE person ALTER COLUMN id TYPE UUID; column data type degistirme (calısmadı!)
--- UPDATE person SET uuid = uuid_generate_v4() WHERE id = 2;
-
--- procedure ile uuid tanımlama
-DROP PROCEDURE uuid_tanimlama(table_name VARCHAR);
-CREATE OR REPLACE PROCEDURE uuid_tanimlama()
-LANGUAGE plpgsql AS $$
+-- ////// DEGISKEN TANIMLAMA ISLEMLERI \\\\\\ 
+-- Kullanımı;
+DO $$
 DECLARE
-    sayac INTEGER := 1;
-    id_degeri INTEGER;
-    dongu_limit INTEGER;
-BEGIN 
-    dongu_limit := (SELECT MAX(id) FROM car);
-    while sayac <= dongu_limit loop
-        id_degeri := (SELECT id FROM car WHERE id = sayac);
-        if id_degeri NOTNULL THEN
-            UPDATE car SET uuid_tanimlama = uuid_generate_v4() WHERE id = id_degeri;
-        end if;
-        sayac := sayac + 1;
-    end loop;
+	degisken degisken_tipi:= deger; -- degisken burada tanımlanır
+BEGIN
+	degisken:= deger; -- degiskenin degeri burada da verilir
+RAISE NOTICE 'degisken: %', degisken; -- degiskeni yazdırma islemi
+END $$;
+
+-- örnek 1: degiskenleri yazdırma
+DO $$
+DECLARE
+	x INTEGER:= 22;
+	y INTEGER:= 10;
+	toplam INTEGER:= (x+y);
+BEGIN
+RAISE NOTICE 'X: %', x;
+RAISE NOTICE 'Y: %', y;
+RAISE NOTICE 'Toplam = %', toplam;
+END $$;
+
+-- örnek 2: degiskeni sorgu ile atama
+DO $$
+DECLARE
+	first_name VARCHAR:= 'Ersel';
+	last_name VARCHAR:= 'Kizmaz';
+	age INTERVAL:= (SELECT AGE(NOW()::DATE, DATE '1997-05-09'));
+BEGIN
+RAISE NOTICE 'I am % % and my age is %.', first_name, last_name, age;
+END $$;
+
+-- örnek 3 (tablo ile): person tablosunda first_name columnda en uzun karaktere sahip olanı yazdırma	
+DO $$
+DECLARE
+	krkter_sayisi INTEGER;
+	name VARCHAR;
+BEGIN
+	krkter_sayisi:= (SELECT MAX(LENGTH(first_name)) FROM person);
+	name:= (SELECT first_name FROM person WHERE LENGTH(first_name) = (
+					SELECT MAX(LENGTH(first_name)) FROM person ));
+RAISE NOTICE
+	'En uzun karaktere sahip olan isim: %, karakter sayisi: %', 
+	name, krkter_sayisi;
+END $$;
+
+-- ////// KARAR YAPILARI (IF) \\\\\\ 
+-- Kullanımı;
+DO $$
+DECLARE -- bu bölümde degiskenler de tanıtılabilir
+	IF conditions THEN
+		statements;
+	ELSE
+		alternative_condition;
+	END IF;
+BEGIN
+	-- bu bölümde de if kalıpları kullanılır
 END $$
 
-CALL uuid_tanimlama();
+-- örnek 1: sınav ortalamasının hesaplanması
+DO $$
+DECLARE
+	sinav1 INTEGER:= 50;
+	sinav2 INTEGER:= 80;
+	sinav3 INTEGER:= 100;
+	ortalama NUMERIC; -- ortalama float olabilir!
+BEGIN
+	ortalama:= ROUND((sinav1 + sinav2 + sinav3)::NUMERIC / 3, 2);
+	IF ortalama <= 30 THEN
+		RAISE NOTICE 'Ortalamanız: %. Bu dersten kaldınız!', ortalama;
+	ELSEIF ortalama > 30 AND ortalama <= 65 THEN
+		RAISE NOTICE 'Ortalamanız: %. Bu dersten sartlı gectiniz!', ortalama;
+	ELSE
+		RAISE NOTICE 'Ortalamanız: %. Bu dersi basarıyla gectiniz, tebrikler!', ortalama;
+	END IF;
+END $$;
 
--- yeni column ekleme
-SELECT * FROM car;
-SELECT * FROM person;
-ALTER TABLE person ADD COLUMN car_id2 UUID;
--- column data type degistirme
-ALTER TABLE person ALTER COLUMN car_id TYPE UUID;
--- unique ekleme
-ALTER TABLE person ADD CONSTRAINT unique_car2 UNIQUE (car_id2);
-ALTER TABLE car ADD CONSTRAINT unique_car1 UNIQUE (uuid_tanimlama);
-UPDATE person SET car_id = (SELECT uuid_tanimlama FROM car WHERE make = 'Mercedes-Benz' LIMIT 1) WHERE uuid = '09ba09f9-bc12-41ef-afaa-eae9d0185771';
+-- örnek 2 (tablo ile): daha sonra yap!
 
--- alter table ile foreign key ekleme
-ALTER TABLE person ADD CONSTRAINT const_fk
-FOREIGN KEY (car_id2) REFERENCES car(uuid_tanimlama) ON DELETE CASCADE;
+-- ////// CASE \\\\\\ 
+-- Kullanımı; (select ile kullanılır, tabloya ek column da ekleyebilir)
+SELECT 
+CASE 
+	WHEN condition1 THEN statment1;
+	WHEN condition2 THEN statment2;
+	ELSE statment3;
+END case_name;
 
-UPDATE person SET car_id2 = (SELECT uuid_tanimlama FROM car WHERE uuid_tanimlama = 'b3f59917-093f-45eb-aa11-9e53d502fdec') WHERE id = 2;
-SELECT * FROM person WHERE id = 3;
-SELECT * FROM person;
--- id'ye sahip olan her şeyi siler
-DELETE FROM car WHERE uuid_tanimlama = 'b3f59917-093f-45eb-aa11-9e53d502fdec';
+-- örnek 1: durum yazdırma
+SELECT 
+CASE 
+	WHEN 5 > 3 THEN 'buyuk'
+	WHEN 5 < 3 THEN 'kucuk'
+END casedurum;
+
+-- örnek 2 (tablo ile): person tablosunda belirli yasları ek columna yazdırma
+SELECT first_name, gender, dob,
+CASE
+	WHEN dob <= DATE '2010-01-01' 
+	THEN '10 yas altı'
+	WHEN dob > DATE '2010-01-01' AND dob <= DATE '2015-01-01'
+	THEN '10-15 yas arası'
+	ELSE
+		'15+ yas'
+END belirli_yaslar
+FROM person LIMIT 50;
+
+-- ////// WHILE \\\\\\
+-- Kullanımı;
+DO $$
+DECLARE
+	i
+BEGIN
+	WHILE i <= border -- (border kosulu farketmez)
+	LOOP
+		statements
+		i:= i + 1;
+	END LOOP;
+END $$;
+
+-- örnek 1: 1-10 arası sayıların toplamı
+DO $$
+DECLARE
+	sayac INTEGER:= 1;
+	toplam INTEGER:= 0;
+BEGIN
+	WHILE sayac <= 10 LOOP
+	RAISE NOTICE 'Sayac durumu: %', sayac;
+	toplam:= toplam + sayac;
+	sayac:= sayac + 1;
+	END LOOP;
+	RAISE NOTICE 'Sayıların toplamı: %', toplam;
+END $$;
+
+-- örnek 2: (tablo ile): tablo ile kullanımı nasıl olur? Daha sonra yap!
+
+-- ////// LOOP \\\\\\
+-- Kullanımı; (calısma mantıgı while ile aynı)
+DO $$
+DECLARE
+	i
+BEGIN
+	LOOP
+	EXIT WHEN i = border;
+	i:= i + 1;
+	END LOOP;
+END $$;
+
+-- örnek: bir metni 10 defa yazdırma
+DO $$
+DECLARE
+	sayac INTEGER:= 1;
+BEGIN
+	LOOP
+	EXIT WHEN sayac = 11; -- loop icinde her yerde kullanılabilir!
+	RAISE NOTICE '%. sayac, Merhaba Ersel Kızmaz', sayac;
+	sayac:= sayac + 1;
+	END LOOP;
+END $$;
+
+-- ////// PROCEDURES \\\\\\
+-- Kullanımı;
+CREATE [OR REPLACE] PROCEDURE procedure_name(paramaters) -- parametresiz de olabilir!
+LANGUAGE plpgsql AS $$
+DECLARE
+	statements
+BEGIN
+	statements
+END $$;
+
+CALL procedure_name(paramaters); -- procedure calıstırma
+DROP PROCEDURE procedure_name(parameters); -- procedure kaldırma
+
+-- örnek 1: parametresiz procedure kullanımı
+CREATE OR REPLACE PROCEDURE parametresiz_pro()
+LANGUAGE plpgsql AS $$
+DECLARE -- kullanılmayadabilir
+BEGIN
+	RAISE NOTICE 'PostgreSQL ögrenmeye devam ediyorum.';
+END $$;
+
+CALL parametresiz_pro();
+DROP PROCEDURE parametresiz_pro();
+
+-- örnek 2 (tablo ile): person tablosuna parametreli procedure yardımıyla veri ekleme
+CREATE PROCEDURE person_veri_ekle(
+	a INT, b VARCHAR, c VARCHAR, d VARCHAR, e VARCHAR, f DATE, g VARCHAR)
+LANGUAGE plpgsql AS $$
+BEGIN
+	INSERT INTO person (id, first_name, last_name, email, gender, dob, cob)
+	VALUES (a, b, c, d, e, f, g);
+	RAISE NOTICE 'Veriler basarıyla eklendi.';
+END $$;
+
+CALL person_veri_ekle(1002, 'Deneme', 'Verisi', 'deneme@gmail.com', 'Male', '2022-08-05', 'Canada');
+SELECT * FROM person WHERE id = 1002; -- veri eklendi mi?
+DROP PROCEDURE person_veri_ekle(a INT, b VARCHAR, c VARCHAR, d VARCHAR, e VARCHAR, f DATE, g VARCHAR); -- procedure kaldırma
 
 
-CREATE DATABASE EnglishWords OWNER ersel;
+
+
+

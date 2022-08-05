@@ -11,6 +11,7 @@ SELECT * FROM person LIMIT 5; -- tablo ön görünümü
 
 -- ////// VIEW \\\\\\ 
 -- Kullanımı; (uzun sorguları kısayol haline getirir ve kolay calıstırılır)
+-- NOT: view, bir tablo degildir!
 CREATE [OR REPLACE] VIEW view_name AS queries; -- 1
 CREATE OR REPLACE VIEW view_name AS queries
 WITH CHECK OPTION; -- 2 (checkli)
@@ -22,6 +23,7 @@ DROP VIEW [IF EXISTS] view_name [CASCADE | RESTRICT]; -- view silme
 CREATE OR REPLACE VIEW view_email AS
 SELECT * FROM person WHERE email IS NULL LIMIT 5;
 SELECT * FROM view_email;
+DROP VIEW view_email;
 
 -- örnek 2: checkli view olusturma
 CREATE VIEW check_view AS
@@ -228,8 +230,4 @@ END $$;
 CALL person_veri_ekle(1002, 'Deneme', 'Verisi', 'deneme@gmail.com', 'Male', '2022-08-05', 'Canada');
 SELECT * FROM person WHERE id = 1002; -- veri eklendi mi?
 DROP PROCEDURE person_veri_ekle(a INT, b VARCHAR, c VARCHAR, d VARCHAR, e VARCHAR, f DATE, g VARCHAR); -- procedure kaldırma
-
-
-
-
 

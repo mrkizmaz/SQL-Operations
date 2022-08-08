@@ -445,17 +445,17 @@ COPY TO tablename 'path/filename.csv' DELIMETER ',' CSV HEADER; -- export
 \copy (SELECT * FROM tablename) to 'path/filename.csv' WITH csv -- in terminal to export
 
 -- metinsel fonksiyonlar
-SELECT ASCII ('e');
-SELECT CONCAT('ersel ', 'kizmaz');
-SELECT CONCAT_WS('*', 'ersel', 'kizmaz');
+SELECT ASCII ('e'); -- karakterin ascii degeri
+SELECT CONCAT('ersel ', 'kizmaz'); -- birlestirme islemi
+SELECT CONCAT_WS('*', 'ersel', 'kizmaz'); -- * ile birlestirme
 
-SELECT LEFT('Merhaba DÜnya', 4);
-SELECT LENGTH('ersel kizmaz');
-SELECT REPLACE('ersel', 'e', 'a');
-SELECT REVERSE('ersel');
-SELECT SUBSTRING('ersel kizmaz', 2, 4);
-SELECT LOWER('ERSEL'), UPPER('kizmaz');
-SELECT INITCAP('ersel kizmaz');
+SELECT LEFT('Merhaba DÜnya', 4); -- soldan 4 karakter alır
+SELECT LENGTH('ersel kizmaz'); -- string uzunlugu
+SELECT REPLACE('ersel', 'e', 'a'); -- degistirme
+SELECT REVERSE('ersel'); -- tersten yazma
+SELECT SUBSTRING('ersel kizmaz', 2, 4); -- 2den 4e kadar karakterleri alır
+SELECT LOWER('ERSEL'), UPPER('kizmaz'); -- karakterleri büyük veya kücük yazar
+SELECT INITCAP('ersel kizmaz'); -- kelimelerin ilk karakterini büyük yazar
 
 -- matematiksel islemler
 SELECT 10 + 2;
@@ -464,16 +464,17 @@ SELECT 5!;
 SELECT 10 % 3;
 SELECT 4^2;
 
-SELECT abs(-22);
-SELECT CEIL(4.89);
-SELECT FLOOR(5.67);
-SELECT pi();
-SELECT POWER(2, 4);
-SELECT RANDOM();
-SELECT ROUND(22.3142, 2);
-SELECT SIGN(-11);
-SELECT SQRT(625);
-SELECT LOG(50);
+SELECT abs(-22); -- negatifi pozitif yapma
+SELECT CEIL(4.89); -- ust tabana yuvarlama
+SELECT FLOOR(5.67); -- alt tabana yuvarlama
+SELECT pi(); -- pi sayısı
+SELECT POWER(2, 4); -- kuvvet alma
+SELECT RANDOM(); -- 0  ve 1 arası deger uretir
+SELECT ROUND(22.3142, 2); -- virgülden sonra 2 deger verir
+SELECT SIGN(-11); -- pozitif: 1, negatif: -1
+SELECT SQRT(625); -- karekök
+SELECT LOG(50); -- logaritma
+
 
 -- float sayı yazdırma
 SELECT 5 / 2; -- output: 2

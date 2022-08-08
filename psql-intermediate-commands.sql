@@ -1,6 +1,6 @@
 		-- ### ORTA SEVIYE POSTRESQL SORGULARI ### --
 /*
-https://www.mockaroo.com/ sitesinden person tablosu olusturuldu
+https://www.mockaroo.com/ sitesinden 'person' tablosu olusturuldu
 ve test database'e aktarıldı.
 */
 
@@ -231,3 +231,143 @@ CALL person_veri_ekle(1002, 'Deneme', 'Verisi', 'deneme@gmail.com', 'Male', '202
 SELECT * FROM person WHERE id = 1002; -- veri eklendi mi?
 DROP PROCEDURE person_veri_ekle(a INT, b VARCHAR, c VARCHAR, d VARCHAR, e VARCHAR, f DATE, g VARCHAR); -- procedure kaldırma
 
+-- örnek 3: cözüm 1; person tablosuna uuid column ekleme ve her bir veriye uuid tanımlama
+-- UUID'yi anlama
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- database'e uuid extension yükleme
+SELECT uuid_generate_v4(); -- evrensel id tanımlar
+
+ALTER TABLE person ADD COLUMN uid UUID DEFAULT uuid_generate_v4(); -- kısayol; her bir veriye uuid tanımlar
+ALTER TABLE person DROP COLUMN uid;
+
+/*
+örnek 3: cözüm 2; 
+person tablosundan ilk 10 veriyi yeni bir tablo ile alıp,
+id columnun ismini ve tipini degistirdikten sonra her veriye procedure ile uuid tanımlama
+-- NOT: var olan tabloya sonradan yeni column eklendikten sonra, procedure ile yeni eklenen columna islem yapılamıyor! (denendi olmadı)
+*/
+
+CREATE VIEW person_ozellikleri AS 
+SELECT * FROM information_schema.columns WHERE table_name = 'person'; -- tablo bilgilerini view ile uzun sorguyu kısa hale getirme 
+SELECT * FROM person_ozellikleri; -- id columnda not null özelligi var! (kaldırılmalı)
+
+CREATE TABLE person10 AS
+SELECT * FROM person ORDER BY id ASC LIMIT 10; -- yeni tablo olusturarak ana tablonun yapısı bozulmaz (gecici tablo da olusturulabilir!)
+ -- constaint özellikleri yok!
+DROP TABLE person10; -- tabloyu silmek icin
+SELECT * FROM person10;
+
+CREATE OR REPLACE PROCEDURE column_sifirla()
+LANGUAGE plpgsql AS $$
+DECLARE
+	sayac INTEGER:= 1;
+	dongu_limit INTEGER;
+BEGIN
+	dongu_limit:= (SELECT MAX(id) FROM person10);
+	WHILE sayac <= dongu_limit 
+		LOOP
+			UPDATE person10 SET id = NULL WHERE id = sayac;
+			sayac:= sayac + 1;
+		END LOOP;
+	RAISE NOTICE 'Tüm islemler basarıyla tamamlandı';
+END $$; -- tüm idleri null yapma islevi
+
+CALL column_sifirla();
+
+SELECT * FROM person10; -- person10 tablosunun son görünümünü inceleme
+
+ALTER TABLE person10 RENAME COLUMN id TO uid; -- id columnun ismini degistirme
+ALTER TABLE person10 ALTER COLUMN uid TYPE VARCHAR USING uid::VARCHAR; 
+ALTER TABLE person10 ALTER COLUMN uid TYPE UUID USING uid::UUID;-- uid columnun tipini degistirme
+-- NOT: bigint veritipi dogrudan uuid'ye cevrilemedi, önce varchar sonra uuid'ye cevrilerek yapılması gerek!
+SELECT * FROM person10; -- veritipi kontrol
+
+CREATE OR REPLACE PROCEDURE uuid_tanimlama()
+LANGUAGE plpgsql AS $$
+DECLARE
+BEGIN
+	UPDATE person10 SET uid = uuid_generate_v4() WHERE uid IS NULL;
+	RAISE NOTICE 'Tüm islemler basarıyla tamamlandı.';	
+END $$;
+
+CALL uuid_tanimlama(); -- procedure cagırma
+DROP PROCEDURE uuid_tanimlama();
+
+SELECT * FROM person10; -- person10 tablosunun son hali
+
+-- örnek 3: cözüm 3; cok kısa yol
+UPDATE person10 SET uid = uuid_generate_v4() WHERE uid IS NULL; -- procedure kullanılmadan da yapılabilir! (sonradan kesfedildi :)
+
+-- ////// FONKSIYONLAR \\\\\\
+-- Kullanımı;
+-- Procedure'dan farkı dıs dünyaya deger vermesi
+CREATE FUNCTION func_name(parameters)
+RETURNS data_type -- dıs dünyaya gönderilen degerin tipi
+LANGUAGE plpgsql AS $$
+DECLARE
+	variable
+BEGIN
+	islemler
+	RETURN variable
+END $$; -- temel kullanım
+SELECT func_name(parameters); -- fonksiyonnu calıstırır
+SELECT column_names, func_name(parameters) FROM tablename; -- tablolarda kullanımında sonucu ek columnda verir
+
+-- Tablo sonuclu fonksiyon kullanımı;
+CREATE FUNCTION func_name(prmt)
+RETURN table (new_table_columns_with_datatypes)
+LANGUAGE plpgsql AS $$
+DECLARE
+BEGIN
+	RETURN QUERY
+		queries
+END $$;
+SELECT * FROM func_name(prmt);
+
+-- örnek 1: iki sayının toplamı (parametreli)
+CREATE FUNCTION toplam(s1 INT, s2 INT)
+RETURNS INT
+LANGUAGE plpgsql AS $$
+DECLARE
+	sonuc INT;
+BEGIN
+	sonuc:= s1 + s2;
+	RETURN sonuc;
+END $$;
+
+SELECT toplam(14, 8); -- fonksiyonun calıstırılması
+
+-- örnek 2 (tablo ile): person tablosunun emailin maximum uzunlugundan her bir emailin uzunlugunu cıkararak yeni columna ekleme! (parametreli)
+-- sacma örnek gibi, önemli olan mantıgını kavramak!
+CREATE OR REPLACE FUNCTION email_max_length()
+RETURNS INTEGER
+LANGUAGE "plpgsql" AS
+$$
+DECLARE
+	max_uzunluk INTEGER;
+BEGIN
+	max_uzunluk:= (SELECT MAX(LENGTH(email)) FROM person);
+	RETURN max_uzunluk;
+END
+$$;
+DROP FUNCTION email_max_length(character varying); -- function drop etme
+
+SELECT id, first_name, email, email_max_length() - LENGTH(email) AS "maxlen-len" FROM person LIMIT 10;
+
+-- örnek 3 (tablo ile): person tablosundan fonksiyon yardımıyla bir parametre girilerek yeni bir tablo yaratma
+CREATE OR REPLACE FUNCTION prmtre_ile_tablo(chr VARCHAR)
+RETURNS TABLE (
+	yeni_id BIGINT,
+	yeni_firstname VARCHAR,
+	yeni_email VARCHAR) -- column veri tipleri ilgili tablo ile aynı olmalı!
+LANGUAGE "plpgsql" AS
+$$
+DECLARE
+BEGIN
+	RETURN QUERY
+		SELECT id, first_name, email FROM person
+		WHERE first_name LIKE chr;
+END
+$$;
+DROP FUNCTION prmtre_ile_tablo(character varying);
+
+SELECT * FROM prmtre_ile_tablo('%er%'); -- ilgili column verilerinde 'er' olanları getiren function

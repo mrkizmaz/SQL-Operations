@@ -371,3 +371,61 @@ $$;
 DROP FUNCTION prmtre_ile_tablo(character varying);
 
 SELECT * FROM prmtre_ile_tablo('%er%'); -- ilgili column verilerinde 'er' olanları getiren function
+
+-- ////// TRIGGERS \\\\\\
+/* Bir tablodan herhangi bir degisiklik (insert, update, select, delete, etc) yapıldıktan sonra
+bir baska tablonun veya aynı tablonun bu durumdan etkilenmesidir. */
+-- Kullanımı;
+-- önce fonksiyon islevi olusturulur;
+CREATE [OR REPLACE] FUNCTION trig_name()
+	RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+	variable_type -- kullanılmayadabilir (parametreli oldugunda kullanılır genelde)
+BEGIN
+	UPDATE foreign_table SET columnname = columnname + 1 -- farklı sorgularda yazılabilir
+	RETURN NEW;
+END $$;
+-- sonra trigger;
+CREATE TRIGGER testtrig
+AFTER INSERT [SELECT, DELETE, etc.]-- hangi sorgu yapıldıgında?
+ON target_table
+FOR EACH ROW -- her bir satır icin
+EXECUTE PROCEDURE trig_name();
+
+-- person tablosuyla iliskili yeni bir tablo olusturularak triggerlar olusturma;
+-- örnek 1: person tablosundaki veriler ve yeni eklenecek olan verilerin toplam sayısını gösteren trigger,
+-- I. islem;
+CREATE TABLE IF NOT EXISTS person_trigger_table (
+	toplam_veri INTEGER );
+INSERT INTO person_trigger_table (toplam_veri) VALUES ((SELECT COUNT(*) FROM person));
+SELECT * FROM person_trigger_table;
+-- II. islem;
+CREATE OR REPLACE FUNCTION person_count_data()
+	RETURNS TRIGGER
+LANGUAGE "plpgsql" AS
+$$
+DECLARE
+BEGIN
+	UPDATE person_trigger_table SET toplam_veri = toplam_veri + 1;
+	RETURN NEW;
+END
+$$;
+-- III. islem;
+CREATE TRIGGER test_person_trigger
+AFTER INSERT
+ON person
+FOR EACH ROW
+EXECUTE PROCEDURE person_count_data();
+-- trigger kontrol;
+INSERT INTO person (id, first_name, last_name, email, gender, dob, cob)
+VALUES
+	(1003, 'trigger', 'kontrol', 'trigger@gmail.com', 'Male', '2022-08-06', 'Denmark'); -- person tablosuna veri ekleme
+
+INSERT INTO person (id, first_name, last_name, email, gender, dob, cob)
+VALUES
+	(1004, 'trigger2', 'kontrol2', 'trigger2@gmail.com', 'Male', '2022-08-06', 'Denmark'),
+	(1005, 'trigger3', 'kontrol3', 'trigger3@gmail.com', 'Female', '2022-08-07', 'Canada'),
+	(1006, 'trigger4', 'kontrol4', 'trigger4@gmail.com', 'Female', '2022-08-08', 'German'); -- coklu veri ekleme
+
+SELECT * FROM person_trigger_table; -- toplam veri sayısını inceleme

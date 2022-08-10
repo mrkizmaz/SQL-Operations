@@ -429,3 +429,44 @@ VALUES
 	(1006, 'trigger4', 'kontrol4', 'trigger4@gmail.com', 'Female', '2022-08-08', 'German'); -- coklu veri ekleme
 
 SELECT * FROM person_trigger_table; -- toplam veri sayısını inceleme
+
+-- örnek 2: person tablosunda 'first_name' columnda yer alan bütün veriler ve yeni eklenecek olan verilerin toplam karakter uzunlugunu triggerlama,
+-- I. islem;
+ALTER TABLE person_trigger_table ADD COLUMN fn_toplam_karakter BIGINT; -- trigger tabloya yeni column ekleme
+UPDATE person_trigger_table 
+SET fn_toplam_karakter = (
+	SELECT SUM(LENGTH(first_name)) FROM person ); -- first_name columndaki verilerin toplam karakter sayısını yeni tabloya ekleme
+SELECT * FROM person_trigger_table;
+-- II. islem;
+CREATE OR REPLACE FUNCTION personfn_char_length()
+	RETURNS TRIGGER
+LANGUAGE "plpgsql" AS
+$$
+DECLARE
+	uzunluk INTEGER;
+BEGIN
+	uzunluk:= (SELECT LENGTH(first_name) FROM person ORDER BY id DESC LIMIT 1);
+	UPDATE person_trigger_table SET fn_toplam_karakter = fn_toplam_karakter + uzunluk;
+	RETURN NEW;
+END
+$$;
+-- III. islem;
+CREATE TRIGGER test_person_trigger2
+AFTER INSERT
+ON person
+FOR EACH ROW
+EXECUTE PROCEDURE personfn_char_length();
+-- trigger kontrol;
+INSERT INTO person (id, first_name, last_name, email, gender, dob, cob)
+VALUES
+	(1007, '10karakter', 'kontrol', 'karakter@gmail.com', 'Male', '2022-08-09', 'Finland'); -- yeni veri ekleme
+
+SELECT * FROM person_trigger_table; -- toplam karakter sayısını inceleme
+
+/*
+???: peki ya person tablosundan veri silinirse triggerlar etkilenir mi? (denendi ve etkilenmedi!)
+Bu sorunu düzeltmek icin yeni triggerlar olusturulması gerekir!
+Yukarıdaki islemler ile aynı, sadece 
+			+ --> - ve
+			INSERT --> DELETE ile degistirilmesi gerekir. Uzun oldugu icin yapmadım :/
+*/

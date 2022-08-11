@@ -297,6 +297,9 @@ SELECT * FROM person10; -- person10 tablosunun son hali
 -- örnek 3: cözüm 3; cok kısa yol
 UPDATE person10 SET uid = uuid_generate_v4() WHERE uid IS NULL; -- procedure kullanılmadan da yapılabilir! (sonradan kesfedildi :)
 
+SELECT pg_sleep(5); -- uyuma zamanı saniye cinsinden
+SELECT * FROM person LIMIT 5;
+
 -- ////// FONKSIYONLAR \\\\\\
 -- Kullanımı;
 -- Procedure'dan farkı dıs dünyaya deger vermesi
@@ -469,4 +472,60 @@ Bu sorunu düzeltmek icin yeni triggerlar olusturulması gerekir!
 Yukarıdaki islemler ile aynı, sadece 
 			+ --> - ve
 			INSERT --> DELETE ile degistirilmesi gerekir. Uzun oldugu icin yapmadım :/
+*/
+
+-- örnek 3: person tablosundan silinen son veriyi trigger tablosuna kaydetme, 
+-- NOT: herhangi rasgele bir veri silindiginde triggerlama olmadı! (parametreli trigger olmuyor, denendi!)
+-- I. islem;
+ALTER TABLE person_trigger_table ADD COLUMN silinen_son_veri TEXT; -- trigger tabloya yeni column ekleme
+SELECT * FROM person_trigger_table;
+-- II. islem;
+CREATE OR REPLACE FUNCTION silinen_son_veri()
+	RETURNS TRIGGER
+LANGUAGE "plpgsql" AS
+$$
+DECLARE
+	sil_id INTEGER;
+	uzunluk INTEGER;
+	veri TEXT;
+BEGIN
+	sil_id:= (SELECT id FROM person ORDER BY id DESC LIMIT 1);
+	uzunluk:= (SELECT LENGTH(first_name) FROM person ORDER BY id DESC LIMIT 1);
+	veri:= (SELECT CONCAT_WS(',', id, first_name, last_name, email, gender, dob, cob) FROM person WHERE id = sil_id);
+	UPDATE person_trigger_table
+		SET silinen_son_veri = veri,
+			toplam_veri = toplam_veri - 1,
+			fn_toplam_karakter = fn_toplam_karakter - uzunluk;
+	RETURN NEW;
+END
+$$;
+-- III. islem;
+CREATE TRIGGER test_person_trigger3
+AFTER DELETE
+ON person
+FOR EACH ROW
+EXECUTE PROCEDURE silinen_son_veri();
+-- trigger kontrol;
+SELECT * FROM person_trigger_table; -- islemden önceki tablo durum kontrolü
+DELETE FROM person WHERE id = 1007; -- son veriyi silme
+SELECT * FROM person_trigger_table; -- islemden sonraki tablo durum kontrolü
+/*
+NOT: silinen son veriyi degil, son veriden bir öncekini ekliyor
+bunun nedeni silme isleminin triggerdan önce calısması olabilir! 
+Ama triggerlar sorunsuz calısıyor :)
+*/
+
+-- ////// INDEXES \\\\\\
+-- Büyük veri boyutlarında sorgu performansını yüksek ve gpu yogunlugunu düsürmek icin kullanılır.
+-- Index ile ilgili detaylı bilgi icin: https://www.farukerdem.com/postgresql-index/2021/02/26
+
+/* 
+////// EK BILGILER \\\\\\
+# CSV dosyasını veri tabanına aktarma (import) islemi;
+	1. CSV dosyasındaki verilerin column isimleri ile benzer sekilde yeni tablo olusturulur
+	2. COPY table_name(column1, column2, ...) FROM 'dosya_yolu' DELIMETER ',' CSV HEADER;
+   ya da COPY table_name FROM 'dosya_yolu' DELIMETER ',' CSV HEADER;
+
+# Dısardan veri tabanı yüklemek icin;
+	https://www.postgresqltutorial.com/postgresql-getting-started/load-postgresql-sample-database/
 */

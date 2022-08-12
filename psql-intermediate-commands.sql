@@ -529,3 +529,5 @@ Ama triggerlar sorunsuz calısıyor :)
 # Dısardan veri tabanı yüklemek icin;
 	https://www.postgresqltutorial.com/postgresql-getting-started/load-postgresql-sample-database/
 */
+
+

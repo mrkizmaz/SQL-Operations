@@ -926,4 +926,3 @@ ALTER COLUMN c3 SET NOT NULL; -- coklu columna not null özelligi ekleme
 SELECT pg_available_extensions();
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- extension yüklemek icin
 SELECT uuid_generate_v4(); -- evrensel id tanımlar
-

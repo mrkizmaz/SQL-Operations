@@ -523,8 +523,8 @@ Ama triggerlar sorunsuz calısıyor :)
 ////// EK BILGILER \\\\\\
 # CSV dosyasını veri tabanına aktarma (import) islemi;
 	1. CSV dosyasındaki verilerin column isimleri ile benzer sekilde yeni tablo olusturulur
-	2. COPY table_name(column1, column2, ...) FROM 'dosya_yolu' DELIMETER ',' CSV HEADER;
-   ya da COPY table_name FROM 'dosya_yolu' DELIMETER ',' CSV HEADER;
+	2. COPY table_name(column1, column2, ...) FROM 'dosya_yolu' DELIMITER ',' CSV HEADER;
+   ya da COPY table_name FROM 'dosya_yolu' DELIMITER ',' CSV HEADER;
 
 # Dısardan veri tabanı yüklemek icin;
 	https://www.postgresqltutorial.com/postgresql-getting-started/load-postgresql-sample-database/
